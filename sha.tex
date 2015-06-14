@@ -1,0 +1,177 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite, hyperref, graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil, english]{babel}
+\title{\LARGE SHA}
+\author{Lucas Tonussi\\lptonussi@gmail.com\\Insegurança em 
+Computação\\Universidade Federal de Santa Catarina}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Estudo aprofundado de \textbf{SHA3}, baseado no material: The National Institute
+of Standards and Technology's (NIST) Computer Security Division (CSD) released
+its draft FIPS Pub 202 [35 pdf pages] titled "SHA-3 Standard: Permutation -
+Based Hash and Extendable-Output Functions".
+\end{abstract}
+
+\IEEEoverridecommandlockouts
+
+\begin{keywords}
+keccak-f, sha2, sha3, sponge function, hashes, state array, nist, keccak-p, 
+step mappings, pré-imagem, colisão.
+\end{keywords}
+
+\IEEEpeerreviewmaketitle
+
+\section{Questões}
+
+\begin{enumerate}
+
+\item Definição de função de \underline{hash} criptográfica.
+
+\begin{enumerate}
+\item Função de \underline{hash} criptográfica é um tipo de função hash
+necessária para aplicações de segurança. É um algoritmo do qual é um problema
+intratável de se achar uma informação que mapeia para um resumo
+(unilateralidade), ou duas informações que mapeiam para um mesmo resumo (livre
+de colisões) (Stallings, pg 314).
+
+\begin{enumerate}
+\item Unidirecionalidade: $h = H(m),\ h \rightarrow m,\
+\underline{\textbf{mas}}\ \underline{\textbf{nunca}}\ h \leftarrow m$
+
+\item Compressão: $len(H_1(m_1)) = len(H_2(m_2)) = \ldots = len(H_n(m_n))\
+\underline{\textbf{deve}}\ \underline{\textbf{ser}}\ len(H(m)) < 
+len(m)$.
+
+\item Primitivas: Calcular $h = H(m)$ usando funções simples.
+
+\item Difusão: o resumo $H(m)$ deve ser uma função complexa de todos os bits da
+mensagem $M$.
+
+\item Avalanche: Modifica um só bit da mensagem $M$, então $h = H(m)$ deverá
+mudar a metade dos seus bits aproximadamente (50\%).
+
+\item Colisão simples: será computacionalmente intratável, conhecido $M$,
+encontrar outro $M’$ tal que $H_1(m_1) = H_2(m_2)$. Isto se conhece como
+resistência a colisões.
+
+\item Colisão forte: será computacionalmente difícil encontrar um par $(M_1,\
+M_2)$ de forma que $H_1(m_1) = H_2(m_2)$. Isto se conhece como resistência forte
+contra colisões.
+\end{enumerate}
+
+\end{enumerate}
+
+\item \underline{Propriedades}.
+
+\begin{enumerate}
+
+\item Pré-imagem.
+
+\item Segunda pré-imagem.
+
+\item Colisão.
+
+\end{enumerate}
+
+\item Explicar o \textbf{SHA3}.
+
+\item Responder as seguintes questões relacionadas a referência\cite{nist} que
+apresenta o \textbf{SHA-3} padronizado pelo \textbf{NIST}.
+
+\begin{enumerate}
+
+\item O que é e para que serve o \textit{State Array} (figura 1)?
+
+\item Como é feita a conversar de strings para \textit{State Arrays}? Mostrar
+também um exemplo de vocês, diferente do NIST.
+
+\item Como é feita a conversão de \textit{State Array} para Strings? Incluir um
+exemplo de vocês.
+
+\item Explicar os cinco passos de mapeamento (\textit{Step Mappings}). Explicar
+os algoritmos envolvidos e cada uma das figuras apresentadas (figuras 3 a 6).
+
+\item Explicar a permutação \textsc{Keccak-p[b,nr]}.
+
+\begin{enumerate}
+
+\item Compare esta função com a Keccak-f.
+
+\end{enumerate}
+
+\item Descrever o \textit{Framework Sponge Construction}.
+
+\begin{enumerate}
+
+\item Explique a figura 7 e o Algoritmo 8.
+
+\end{enumerate}
+
+\item Explique a família de funções esponja Keccak, conforme seção 5.
+
+\item Explique as especificação da função SHA3, conforme Seção 6.
+
+\begin{enumerate}
+
+\item Funções de hash \textbf{SHA3}.
+
+\item Funções de Saída Estendida.
+
+\end{enumerate}
+
+\item Apresente a análise de segurança conforme Apêndice A.1.
+
+\item Gere os seus próprios exemplos (diferente do NIST) conforme Apêndice A.2.
+
+\end{enumerate}
+
+\item Apresente uma implementação do \underline{SHA3}.
+
+\begin{enumerate}
+
+\item Descreva a implementação.
+
+\item Mostre na implementação onde se da cada passo importante do cálculo do
+\underline{hash}.
+
+\item Execute a implementação passo a passo, mostrando o maior número possível
+de saídas.
+
+\end{enumerate}
+
+\item Compare o \textbf{SHA2}, em termos de performance, com os
+\underline{hashes} da família \textbf{SHA2}. Use um mesmo computador e
+implementações padrão para esta comparação. O resultado da comparação deve ser
+em termos de tamanhos de arquivos dos quais hashes são calculados e quanto tempo
+para \underline{hash} (uma média) demora para ser calculado.
+
+\item Apresente uma crítica ao \textbf{SHA3}.
+
+\begin{enumerate}
+
+\item O que ele é melhor ou diferente em relação a outros \textbf{hashes}?
+
+\item Quanto tempo você acha (e por que) o \textbf{SHA3} será considerado
+seguro?
+
+\end{enumerate}
+
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem{nist} NIST Computer Security Division (CSD). SHA-3 Standard:
+Permutation-Based Hash and Extendable-Output Functions. 2014. 27p.
+
+
+
+\end{thebibliography}
+
+\smallskip
+
+\end{document}
