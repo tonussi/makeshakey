@@ -1,8 +1,8 @@
 \documentclass[conference]{IEEEtran}
-\usepackage{cite, hyperref, graphicx}
+\usepackage{cite, hyperref, graphicx, color}
 \usepackage[utf8]{inputenc}
 \usepackage[brazil, english]{babel}
-\title{\LARGE SHA}
+\title{$f^3$ o $f^{-f, -p, -b}$}
 \author{Lucas Tonussi\\lptonussi@gmail.com\\Insegurança em 
 Computação\\Universidade Federal de Santa Catarina}
 
@@ -39,49 +39,52 @@ intratável de se achar uma informação que mapeia para um resumo
 (unilateralidade), ou duas informações que mapeiam para um mesmo resumo (livre
 de colisões) (Stallings, pg 314).
 
-\begin{enumerate}
-\item Unidirecionalidade: $h = H(m),\ h \rightarrow m,\
-\underline{\textbf{mas}}\ \underline{\textbf{nunca}}\ h \leftarrow m$
-
-\item Compressão: $len(H_1(m_1)) = len(H_2(m_2)) = \ldots = len(H_n(m_n))\
-\underline{\textbf{deve}}\ \underline{\textbf{ser}}\ len(H(m)) < 
-len(m)$.
-
-\item Primitivas: Calcular $h = H(m)$ usando funções simples.
-
-\item Difusão: o resumo $H(m)$ deve ser uma função complexa de todos os bits da
-mensagem $M$.
-
-\item Avalanche: Modifica um só bit da mensagem $M$, então $h = H(m)$ deverá
-mudar a metade dos seus bits aproximadamente (50\%).
-
-\item Colisão simples: será computacionalmente intratável, conhecido $M$,
-encontrar outro $M’$ tal que $H_1(m_1) = H_2(m_2)$. Isto se conhece como
-resistência a colisões.
-
-\item Colisão forte: será computacionalmente difícil encontrar um par $(M_1,\
-M_2)$ de forma que $H_1(m_1) = H_2(m_2)$. Isto se conhece como resistência forte
-contra colisões.
+\item Para \textbf{funções hash}, a entrada é chamada de mensagem $m$, e a saída
+é chamada a mensagem moída ou um valor hash. O tamanho da mensagem pode varias é
+claro; mas o tamanho da mensagem moída é fixo. Uma função de hash criptográfico
+é uma função hash que é desenhada para prover propriedades especiais, incluindo
+resistência a colisão e resistência a bilateralidade (preimage), que são
+importantíssimas para muitas aplicações envolvendo segurança da informação.
 \end{enumerate}
 
-\end{enumerate}
+\item Propriedades.
 
-\item \underline{Propriedades}.
+Requerimentos e Segurança para funções de \underline{hash} criptográfico,
+existem alguns porém a questão pede apenas 3  requisitos. (Stallings Página 323
+Capítulo 11.3, Tabela 11.1,  Linhas 4, 5, 6).
 
 \begin{enumerate}
+\item Preimage resistant (one-way property): $h = H(m),\ h \rightarrow m$ 
+\underline{\color{red} \textbf{mas}} \underline{\color{red} \textbf{nunca}} $h 
+\leftarrow m$.
 
-\item Pré-imagem.
+\item Second preimage resistant (weak collision resistant): $len(H_1(m_1)) = 
+len(H_2(m_2)) = \ldots = len(H_n(m_n))$ \underline{\color{red} \textbf{deve}} 
+\underline{\color{red} \textbf{ser}} $len(H(m)) \le len(m)$.
 
-\item Segunda pré-imagem.
-
-\item Colisão.
-
+\item Collision resistant (strong collision resistant): $h_1 = H(m_1),\ 
+h_2=H(m_2),\ \ldots,\ h_n=H(m_n)\  \vert\ h_1 \not=\ h_2 \not=,\ \ldots,\ 
+\not=\ h_n$.
 \end{enumerate}
 
 \item Explicar o \textbf{SHA3}.
 
+É um acrônimo para Secure Hash Algorithm-3. É uma família de algoritmos de
+\underline{hash} criptográfico. Contém várias restrições nessa família. Os
+algoritmos dessa família devem seguir o mesmo arquétipo da família $SHA^3$. Do
+contrário não são dessa família. O Arquétipo mais novo prevê suplementar a
+famílias mais antigas que já estão depreciadas são elas $SHA^1$ e $SHA^2$. Essa
+padronização (arquétipo) é uma nova família de funcionalidades especificadas na
+FIPS 180-4\cite{fips}. O SHA-3 é \underline{\textbf{baseada}} no \textsc{KECCAK}
+\cite{keccak}, o algoritmo que a NIST (Instituto Nacional de Padrões e
+Tecnologia) selecionou como vencedor na competição pública "SHA-3 Cryptographic
+Hash Algorithm Competition" \cite{sha3}. Essa família consiste de 4 algoritmos
+de função hash criptográfico são eles: SHA3-224, SHA3-256, SHA3-384, e SHA3-512;
+dois são funções de vazão estendida são eles: SHAKE128 e SHAKE256 (SHAKE, Secure
+Hash Algorithm Keccak).
+
 \item Responder as seguintes questões relacionadas a referência\cite{nist} que
-apresenta o \textbf{SHA-3} padronizado pelo \textbf{NIST}.
+apresenta o $SHA^3$ padronizado pelo NIST.
 
 \begin{enumerate}
 
@@ -93,17 +96,57 @@ também um exemplo de vocês, diferente do NIST.
 \item Como é feita a conversão de \textit{State Array} para Strings? Incluir um
 exemplo de vocês.
 
-\item Explicar os cinco passos de mapeamento (\textit{Step Mappings}). Explicar
-os algoritmos envolvidos e cada uma das figuras apresentadas (figuras 3 a 6).
+\item Explicar os cinco Passos de Mapeamento (NIST, pg 19, 3.2 Step Mappings).
+Explicar os algoritmos envolvidos e cada uma das figuras apresentadas (figuras 3
+a 6, páginas 19 até 23).
 
-\item Explicar a permutação \textsc{Keccak-p[b,nr]}.
+\item Explicar a permutação $KECCAK-p[b,\ n_r]$.
+
+Dado um arranjo de estados, A e também um índice de rodada $i_r$ então a função
+de rodada "Rnd" (A subfunção de rodada da permutação $KECCAK -p$) é uma
+transformação que resulta da aplicação dos Passos de Mapeamento $\theta,\ \rho,\
+\pi,\ \chi,\ \iota$ nessa mesma ordem, resumindo:
+
+$Rnd(A, i_r) = \iota(\chi(\pi(\rho(\theta(A)))), i_r)$
+
+A permutação $KECCAK -p[b, n r ]$ consiste de $n_r$ iteração do procedimento
+$Rnd$, como especificado no Algoritmo 7.
+
+Segue o Algoritmo 7: $KECCAK -p[b, n_r](S)$
+
+Entrada: Mensagem $S$ de tamanho $b$; Número de rodadas $n_r$. Saída: Mensagem
+$S'$ de tamanho $b$. Algoritmo:
+
+Converter $S$ em Arranjo de Estados $A$, como descrito na Sec. 3.1.2
+\cite{nist}.
+
+Para $i_r$ de $2l + 12 - n_r \textbf{ até } 2l + 12 - 1$, $A = Rnd(A,\ i_r)$.
+
+Converter $A$ na string $S'$ de tamanho $b$, como descrito na Sec. 3.1.3.
+\cite{nist}
+
+Retornar $S'$.
 
 \begin{enumerate}
-
-\item Compare esta função com a Keccak-f.
-
+\item Compare esta função com a $Keccak -f$.
 \end{enumerate}
 
+A subfamília $Keccak -f$ de permutações, originalmente definida em
+\cite{bertoni}, é uma \underline{especialização} da subfamília $Keccak -p$ para
+o caso $n_r = 12 + 21$.
+
+$$Keccak -f[b] = Keccak -p[b, 12 + 2l]$$
+
+Consecutivamente, a permutação $Keccak -p[1600, 24]$, o qual delineia as 6
+funções $SHA^3$, é \underline{equivalente} ao $Keccak -f [1600]$. As rodadas do
+$Keccak -f [b]$ são indexadas de $0$ até $11 + 21$. O resultado é indexado
+dentre o Passo 2 do Algoritmo 7 pois a rodada do $Keccak -p [b, n_r]$ bate com a
+última rodada do $Keccak -f [b]$, e vice versa.
+
+Por exemplo, $Keccak -p[1600, 19]$ é equivalente para com a última rodada de
+número 19 do $Keccak -f [1600]$. Similarmente, $Keccak -f [1600]$ é equivalente
+para com a última rodada de número 24 do $Keccak -p [1600, 30]$; mas nesse caso,
+o rodadas precedentes para o $Keccak -p[1600, 30]$ são indexadas de $-6$ à $-1$.
 \item Descrever o \textit{Framework Sponge Construction}.
 
 \begin{enumerate}
@@ -114,11 +157,13 @@ os algoritmos envolvidos e cada uma das figuras apresentadas (figuras 3 a 6).
 
 \item Explique a família de funções esponja Keccak, conforme seção 5.
 
+
+
 \item Explique as especificação da função SHA3, conforme Seção 6.
 
 \begin{enumerate}
 
-\item Funções de hash \textbf{SHA3}.
+\item Funções de hash SHA3.
 
 \item Funções de Saída Estendida.
 
@@ -130,33 +175,33 @@ os algoritmos envolvidos e cada uma das figuras apresentadas (figuras 3 a 6).
 
 \end{enumerate}
 
-\item Apresente uma implementação do \underline{SHA3}.
+\item Apresente uma implementação do SHA3.
 
 \begin{enumerate}
 
 \item Descreva a implementação.
 
 \item Mostre na implementação onde se da cada passo importante do cálculo do
-\underline{hash}.
+hash.
 
 \item Execute a implementação passo a passo, mostrando o maior número possível
 de saídas.
 
 \end{enumerate}
 
-\item Compare o \textbf{SHA2}, em termos de performance, com os
-\underline{hashes} da família \textbf{SHA2}. Use um mesmo computador e
-implementações padrão para esta comparação. O resultado da comparação deve ser
-em termos de tamanhos de arquivos dos quais hashes são calculados e quanto tempo
-para \underline{hash} (uma média) demora para ser calculado.
+\item Compare o SHA2, em termos de performance, com os hashes da família SHA2.
+Use um mesmo computador e implementações padrão para esta comparação. O
+resultado da comparação deve ser em termos de tamanhos de arquivos dos quais
+hashes são calculados e quanto tempo para hash (uma média) demora para ser
+calculado.
 
-\item Apresente uma crítica ao \textbf{SHA3}.
+\item Apresente uma crítica ao SHA3.
 
 \begin{enumerate}
 
-\item O que ele é melhor ou diferente em relação a outros \textbf{hashes}?
+\item O que ele é melhor ou diferente em relação a outros hash?
 
-\item Quanto tempo você acha (e por que) o \textbf{SHA3} será considerado
+\item Quanto tempo você acha (e por que) o SHA3 será considerado
 seguro?
 
 \end{enumerate}
@@ -164,12 +209,24 @@ seguro?
 \end{enumerate}
 
 \begin{thebibliography}{9}
-
 \bibitem{nist} NIST Computer Security Division (CSD). SHA-3 Standard:
 Permutation-Based Hash and Extendable-Output Functions. 2014. 27p.
 
+\bibitem{fips} Federal Information Processing Standards Publication 180-4,
+Secure Hash Standard (SHS), Information Technology Laboratory, National
+Institute of Standards and Technology, March 2012,
+http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf.
 
+\bibitem{sha3} The SHA-3 Cryptographic Hash Algorithm Competition, November
+2007-October 2012, http://csrc.nist.gov/groups/ST/hash/sha-3/index.html.
 
+\bibitem{keccak} G. Bertoni, J. Daemen, M. Peeters, and G. Van Assche, “Keccak
+Specifications,” Submission to NIST (Round 3), January 2011,
+http://keccak.noekeon.org/Keccak- submission-3.pdf.
+
+\bibitem{bertoni} G. Bertoni, J. Daemen, M. Peeters, and G. Van Assche, “The K
+ECCAK reference, Version 3.0,” January 2011,
+http://keccak.noekeon.org/Keccak-reference-3.0.pdf.
 \end{thebibliography}
 
 \smallskip
