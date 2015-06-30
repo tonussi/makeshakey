@@ -1,191 +1,755 @@
-\documentclass[conference]{IEEEtran}
-\usepackage{cite, hyperref, graphicx, color}
+\documentclass[12pt, a4paper]{article}
+\usepackage[left=1cm, right=1cm, top=5cm, bottom=5cm]{geometry}
+\usepackage{cite, hyperref, graphicx, listings, mathtools, longtable}
+\usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utf8]{inputenc}
-\usepackage[brazil, english]{babel}
-\title{$f^3$ o $f^{-f, -p, -b}$}
-\author{Lucas Tonussi\\lptonussi@gmail.com\\Insegurança em 
-Computação\\Universidade Federal de Santa Catarina}
+\usepackage[brazil]{babel}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\title {
+  Questionário sobre SHA3 algoritmos de criptografia baseada em hash
+}
+
+\author {
+  Lucas Tonussi, matr: \textit{12106577}
+}
+
+\hypersetup {
+  colorlinks,
+  citecolor = NavyBlue,
+  filecolor = NavyBlue,
+  linkcolor = NavyBlue,
+  urlcolor = NavyBlue
+}
 
 \begin{document}
 
 \maketitle
 
-\begin{abstract}
-Estudo aprofundado de \textbf{SHA3}, baseado no material: The National Institute
-of Standards and Technology's (NIST) Computer Security Division (CSD) released
-its draft FIPS Pub 202 [35 pdf pages] titled "SHA-3 Standard: Permutation -
-Based Hash and Extendable-Output Functions".
-\end{abstract}
-
-\IEEEoverridecommandlockouts
-
-\begin{keywords}
-keccak-f, sha2, sha3, sponge function, hashes, state array, nist, keccak-p, 
-step mappings, pré-imagem, colisão.
-\end{keywords}
-
-\IEEEpeerreviewmaketitle
+%\begin{abstract}
+%Estudo aprofundado de \textbf{SHA3}, baseado no material: The National
+%Institute
+%of Standards and Technology's (NIST) Computer Security Division (CSD) released
+%its draft FIPS Pub 202 [35 pdf pages] titled "SHA-3 Standard: Permutation -
+%Based Hash and Extendable-Output Functions".
+%\end{abstract}
+%
+%\IEEEoverridecommandlockouts
+%
+%\begin{keywords}
+%computer security, cryptography, extendable-output function, Federal
+%Information
+%Processing Standard, hash algorithm, hash function, information security,
+%KECCAK, message digest, permutation, SHA-3, sponge construction, sponge
+%function, XOF.
+%\end{keywords}
+%
+%\IEEEpeerreviewmaketitle
 
 \section{Questões}
 
 \begin{enumerate}
 
-\item Definição de função de \underline{hash} criptográfica.
+\item Definição de função de \underline{hash} criptográfica.\\
 
-\begin{enumerate}
-\item Função de \underline{hash} criptográfica é um tipo de função hash
-necessária para aplicações de segurança. É um algoritmo do qual é um problema
-intratável de se achar uma informação que mapeia para um resumo
-(unilateralidade), ou duas informações que mapeiam para um mesmo resumo (livre
-de colisões) (Stallings, pg 314).
+  \begin{itemize}
 
-\item Para \textbf{funções hash}, a entrada é chamada de mensagem $m$, e a saída
-é chamada a mensagem moída ou um valor hash. O tamanho da mensagem pode varias é
-claro; mas o tamanho da mensagem moída é fixo. Uma função de hash criptográfico
-é uma função hash que é desenhada para prover propriedades especiais, incluindo
-resistência a colisão e resistência a bilateralidade (preimage), que são
-importantíssimas para muitas aplicações envolvendo segurança da informação.
-\end{enumerate}
+    \item Função de \underline{hash} criptográfica é um tipo de função hash
+    necessária para aplicações de segurança. É um algoritmo do qual é um
+    problema intratável de se achar uma informação que mapeia para um resumo
+    (unilateralidade), ou duas informações que mapeiam para um mesmo resumo
+    (livre de colisões) (Stallings, pg 314).\\
 
-\item Propriedades.
+    \item Para \textbf{funções hash}, a entrada é chamada de mensagem $m$, e a
+    saída é chamada a mensagem moída ou um valor hash. O tamanho da mensagem
+    pode varias é claro; mas o tamanho da mensagem moída é fixo. Uma função de
+    hash criptográfico é uma função hash que é desenhada para prover
+    propriedades especiais, incluindo resistência a colisão e resistência a
+    bilateralidade (pre-imagem), que são importantíssimas para muitas aplicações
+    envolvendo segurança da informação.\\
+
+  \end{itemize}
+
+\item Propriedades.\\
 
 Requerimentos e Segurança para funções de \underline{hash} criptográfico,
 existem alguns porém a questão pede apenas 3  requisitos. (Stallings Página 323
-Capítulo 11.3, Tabela 11.1,  Linhas 4, 5, 6).
+Capítulo 11.3, Tabela 11.1,  Linhas 4, 5, 6).\\
 
-\begin{enumerate}
-\item Preimage resistant (one-way property): $h = H(m),\ h \rightarrow m$ 
-\underline{\color{red} \textbf{mas}} \underline{\color{red} \textbf{nunca}} $h 
-\leftarrow m$.
+  \begin{itemize}
+    \label{tiposataque}
+    \item Preimage resistant (one-way property): $h = H(m),\ h \rightarrow m$
+    \underline{\color{red} \textbf{mas}} \underline{\color{red} \textbf{nunca}}
+    $h \leftarrow m$.\\
 
-\item Second preimage resistant (weak collision resistant): $len(H_1(m_1)) = 
-len(H_2(m_2)) = \ldots = len(H_n(m_n))$ \underline{\color{red} \textbf{deve}} 
-\underline{\color{red} \textbf{ser}} $len(H(m)) \le len(m)$.
+    \item Second preimage resistant (weak collision resistant): $len(H_1(m_1)) =
+    len(H_2(m_2)) = \ldots = len(H_n(m_n))$ \underline{\color{red}
+    \textbf{deve}} \underline{\color{red} \textbf{ser}} $len(H(m)) \le
+    len(m)$.\\
 
-\item Collision resistant (strong collision resistant): $h_1 = H(m_1),\ 
-h_2=H(m_2),\ \ldots,\ h_n=H(m_n)\  \vert\ h_1 \not=\ h_2 \not=,\ \ldots,\ 
-\not=\ h_n$.
-\end{enumerate}
+    \item Collision resistant (strong collision resistant): $h_1 = H(m_1),\
+    h_2=H(m_2),\ \ldots,\ h_n=H(m_n)\  \vert\ h_1 \not=\ h_2 \not=,\ \ldots,\
+    \not=\ h_n$.\\
+  \end{itemize}
 
-\item Explicar o \textbf{SHA3}.
+\item Explicar o \textbf{SHA3}.\\
 
-É um acrônimo para Secure Hash Algorithm-3. É uma família de algoritmos de
-\underline{hash} criptográfico. Contém várias restrições nessa família. Os
-algoritmos dessa família devem seguir o mesmo arquétipo da família $SHA^3$. Do
-contrário não são dessa família. O Arquétipo mais novo prevê suplementar a
-famílias mais antigas que já estão depreciadas são elas $SHA^1$ e $SHA^2$. Essa
-padronização (arquétipo) é uma nova família de funcionalidades especificadas na
-FIPS 180-4\cite{fips}. O SHA-3 é \underline{\textbf{baseada}} no \textsc{KECCAK}
-\cite{keccak}, o algoritmo que a NIST (Instituto Nacional de Padrões e
-Tecnologia) selecionou como vencedor na competição pública "SHA-3 Cryptographic
-Hash Algorithm Competition" \cite{sha3}. Essa família consiste de 4 algoritmos
-de função hash criptográfico são eles: SHA3-224, SHA3-256, SHA3-384, e SHA3-512;
-dois são funções de vazão estendida são eles: SHAKE128 e SHAKE256 (SHAKE, Secure
-Hash Algorithm Keccak).
+\label{sha3-inicial}
+É um acrônimo para Secure Hash Algorithm-3 (DRAFT FIPS 202, pg 4). É também uma
+família de algoritmos \underline{Hash}-Criptográfico. Ele suplementa as famílias
+já depreciadas, SHA1 e SHA2. Cada função do SHA-3 é baseado no algoritmo
+\textsc{KECCAK}\cite{keccak} (NIST Instituto Nacional de Padrões e Tecnologia).
+O padrão também inclui o \textsc{Keccak-p} que implementa permutações para o
+mesmo (p é de permutar). Esse padrão SHA3 é aplicado em todos os departamentos
+federais e agencias de proteção a informações secretas (DRAFT FIPS 202, pg 5).
+Quem mantêm os código e chaves é o NIST, o documento de especificação do SHA3 é
+o FIPS 202. Quem aprova as implementação é a Secretaria do Comércio
+(Estadunidense). A família SHA3 contém 6 implementações, 4 delas são funções de
+hash criptográfico:\\
+
+  \begin{itemize}
+    \item SHA3-224 \item SHA3-256 \item SHA3-384 \item SHA3-512\\
+  \end{itemize}
+
+e as outras duas são do tipo Funções de
+Vazão-Estendida\footnote{Extendable-Output Functions ou XOFs} são eles:\\
+
+  \begin{itemize}
+    \item SHAKE128 \item SHAKE256 \footnote{SHAKE, Secure Hash Algorithm
+    Keccak}\\
+  \end{itemize}
+
+\item[\color{Aquamarine} nota:] Esses dois XOFs acima são modelados para
+resistir a colisões, e ataques à primeira e segunda pre-imagem (DRAFT FIPS 202,
+pg 31, pg 23 A.1.1 Security Summary).\\
 
 \item Responder as seguintes questões relacionadas a referência\cite{nist} que
-apresenta o $SHA^3$ padronizado pelo NIST.
+apresenta o SHA3 padronizado pelo NIST.\\
 
 \begin{enumerate}
 
-\item O que é e para que serve o \textit{State Array} (figura 1)?
+\item O que é e para que serve o \textit{State Array} (figura 1)?\\
 
-\item Como é feita a conversar de strings para \textit{State Arrays}? Mostrar
-também um exemplo de vocês, diferente do NIST.
+O estado para a permutação \verb|Keccak-p[b, nr]| é composta de
+\textbf{\underline{b bits}}. A especificação nessa Padronização contem duas
+variáveis novas relacionadas à quantidade b de bits; são elas $w = b // 25$ e
+$\l = \log_2(b//25)$ \footnote{Símbolo mtm.: // significa divisão inteira.}. Os
+sete possíveis valores das variáveis que são definidas para as permutações
+\verb|Keccak-p| estão abaixo na tabela.
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|c|}
+    \hline b & 25 & 50 & 100 & 200 & 400 & 800 & 1600 \\
+    \hline w & 1 & 2 & 4 & 8 & 16 & 32 & 64 \\
+    \hline $\l$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\
+    \hline
+  \end{tabular}
+  \caption{Valores de $b,\ w,\ \l$ relacionados para a permutação KECCAK-p}
+\end{table}
+
+Esses valores são convenientes em representar os estados de entrada e saída da
+permutação como strings de b-bits, e também para representar a entrada e saída
+para cada mapeamento como arranjos de $5\times 5\times w$ bits. Podemos definir
+$S$ agora, denotando a string de cada Mapeamento que representa o estado atual,
+então, serão os bits indexados de 0 até b-1, serão portanto $b-1$ estados:
+
+$$S=S[0]\parallel S[1]\parallel S[2]\parallel \ldots \parallel S[b-1]$$
+
+Agora interpretando a figura 1 da página 8, temos \textbf{A} denotando o nosso
+arranjo $5\times 5\times w$ de bits, e os seus índices são as 3-tuplas $(x,\ y,\
+z)\ |\ 0 \le x < 5\ \textbf{e} 0 \le y < 5 \textbf{e} 0 \le z < w$. O bit que
+corresponde à coordenada $(x,\ y,\ z)$ é denotado por $A[x,\ y,\ z]$. O
+\underline{arranjo estado} \footnote{Para o permutador Keccak-p, é um cubo
+binário $5\times 5\times w$ dimensões.} é uma mera representação do estado em um
+arranjo tri-dimensional. Cada peça da figura 1 está exposta a seguir
+(Referência Keccak, sec. 1.6, pg 10, Partes do estado \cite{bertoni}):\\
+
+\begin{enumerate}
+\item estado (state) - conjunto de $5\times 5\times w$ bits
+\item plano (plane) - conjunto de 25 bits (coord. y constante)
+\item fatia (slice) - conjunto de 25 bits (coord. z constante)
+\item folha (sheet) - conjunto de $5w$ bits (coord. x constante)
+\item linha (row) - conjunto 5 bits (coord. y,z constante)
+\item coluna (column) - conjunto de 5 bits (coord. x,z constante)
+\item faixa (lane) - conjunto de $w$ bits (coord. x, y constante)
+\item pedaço (bit) - 1 bit
+\end{enumerate}
+
+\item Como é feita a conversão de strings para \textit{State Arrays}? Mostrar
+também um exemplo de vocês, diferente do NIST.\\
+
+Tome $S$ como a \textbf{string} de b bits (b só pode ser 25, 50, 100, 200, 400,
+800 ou 1600) que representa o estado para a permutação \verb|Keccak-p[b, nr]|.
+O arranjo de estados correspondente, denotado por $A'$, é definido como segue:
+$\forall\ (x,\ y,\ z)\ |\ 0 \le x < 5, 0 \le y < 5$ \textbf{e} $0 \le z < w$
+\textbf{faça}:
+
+$$\textbf{Fórmula:}\ A[x, y, z] = S[w(5y + x) + z]$$
+
+Seja S = 0xbbbb agora precisamos setar as configurações de $b = 200;\ w = b\
+//\ 25 = 8$. String: $101110111011101101000000000000\ldots000000000000000$; onde
+Tamanho da String: $200 bits$ são completados com zeros.\\
+
+$A[ 0 , 0 , 0 ]=S[8*( 0 + 0 )+ 0 ]=S[ 0 ]= 1 $\\
+$A[ 0 , 0 , 1 ]=S[8*( 0 + 0 )+ 1 ]=S[ 1 ]= 0 $\\
+$A[ 0 , 0 , 2 ]=S[8*( 0 + 0 )+ 2 ]=S[ 2 ]= 1 $\\
+$A[ 0 , 0 , 3 ]=S[8*( 0 + 0 )+ 3 ]=S[ 3 ]= 1 $\\
+$A[ 0 , 0 , 4 ]=S[8*( 0 + 0 )+ 4 ]=S[ 4 ]= 1 $\\
+$A[ 0 , 0 , 5 ]=S[8*( 0 + 0 )+ 5 ]=S[ 5 ]= 0 $\\
+$A[ 0 , 0 , 6 ]=S[8*( 0 + 0 )+ 6 ]=S[ 6 ]= 1 $\\
+$A[ 0 , 0 , 7 ]=S[8*( 0 + 0 )+ 7 ]=S[ 7 ]= 1 $\\
+$A[ 0 , 0 , 8 ]=S[8*( 0 + 0 )+ 8 ]=S[ 8 ]= 1 $\\
+$A[ 0 , 0 , 9 ]=S[8*( 0 + 0 )+ 9 ]=S[ 9 ]= 0 $\\
+$A[ 0 , 0 , 10 ]=S[8*( 0 + 0 )+ 10 ]=S[ 10 ]= 1 $\\
+$A[ 0 , 0 , 11 ]=S[8*( 0 + 0 )+ 11 ]=S[ 11 ]= 1 $\\
+$A[ 0 , 0 , 12 ]=S[8*( 0 + 0 )+ 12 ]=S[ 12 ]= 1 $\\
+$A[ 0 , 0 , 13 ]=S[8*( 0 + 0 )+ 13 ]=S[ 13 ]= 0 $\\
+$A[ 0 , 0 , 14 ]=S[8*( 0 + 0 )+ 14 ]=S[ 14 ]= 1 $\\
+$A[ 0 , 0 , 15 ]=S[8*( 0 + 0 )+ 15 ]=S[ 15 ]= 1 $\\
+$A[ 0 , 0 , 16 ]=S[8*( 0 + 0 )+ 16 ]=S[ 16 ]= 0 $\\
+$A[ 0 , 0 , 17 ]=S[8*( 0 + 0 )+ 17 ]=S[ 17 ]= 1 $\\
+$A[ 0 , 0 , 18 ]=S[8*( 0 + 0 )+ 18 ]=S[ 18 ]= 0 $\\
+$A[ 0 , 0 , 19 ]=S[8*( 0 + 0 )+ 19 ]=S[ 19 ]= 0 $\\
+$A[ 0 , 0 , 20 ]=S[8*( 0 + 0 )+ 20 ]=S[ 20 ]= 0 $\\
+$A[ 0 , 0 , 21 ]=S[8*( 0 + 0 )+ 21 ]=S[ 21 ]= 0 $\\
+$$\ldots$$
+$A[ 3 , 2 , 0 ]=S[8*( 2 + 3 )+ 0 ]=S[ 19 ]= 0 $\\
+$A[ 3 , 2 , 1 ]=S[8*( 2 + 3 )+ 1 ]=S[ 20 ]= 0 $\\
+$A[ 3 , 2 , 2 ]=S[8*( 2 + 3 )+ 2 ]=S[ 21 ]= 0 $\\
+$A[ 3 , 2 , 3 ]=S[8*( 2 + 3 )+ 3 ]=S[ 22 ]= 0 $\\
+$A[ 3 , 2 , 4 ]=S[8*( 2 + 3 )+ 4 ]=S[ 23 ]= 0 $\\
+$A[ 3 , 2 , 5 ]=S[8*( 2 + 3 )+ 5 ]=S[ 24 ]= 0 $\\
+$A[ 3 , 2 , 6 ]=S[8*( 2 + 3 )+ 6 ]=S[ 25 ]= 0 $\\
+$A[ 3 , 2 , 7 ]=S[8*( 2 + 3 )+ 7 ]=S[ 26 ]= 0 $\\
+$A[ 3 , 2 , 8 ]=S[8*( 2 + 3 )+ 8 ]=S[ 27 ]= 0 $\\
+$A[ 3 , 2 , 9 ]=S[8*( 2 + 3 )+ 9 ]=S[ 28 ]= 0 $\\
+$$\ldots$$
+$A[ 4 , 0 , 181 ]=S[8*( 0 + 4 )+ 181 ]=S[ 185 ]= 0 $\\
+$A[ 4 , 0 , 182 ]=S[8*( 0 + 4 )+ 182 ]=S[ 186 ]= 0 $\\
+$A[ 4 , 0 , 183 ]=S[8*( 0 + 4 )+ 183 ]=S[ 187 ]= 0 $\\
+$A[ 4 , 0 , 184 ]=S[8*( 0 + 4 )+ 184 ]=S[ 188 ]= 0 $\\
+$A[ 4 , 0 , 185 ]=S[8*( 0 + 4 )+ 185 ]=S[ 189 ]= 0 $\\
+$A[ 4 , 0 , 186 ]=S[8*( 0 + 4 )+ 186 ]=S[ 190 ]= 0 $\\
+$A[ 4 , 0 , 187 ]=S[8*( 0 + 4 )+ 187 ]=S[ 191 ]= 0 $\\
+$A[ 4 , 0 , 188 ]=S[8*( 0 + 4 )+ 188 ]=S[ 192 ]= 0 $\\
+$A[ 4 , 0 , 189 ]=S[8*( 0 + 4 )+ 189 ]=S[ 193 ]= 0 $\\
+$A[ 4 , 0 , 190 ]=S[8*( 0 + 4 )+ 190 ]=S[ 194 ]= 0 $\\
+$A[ 4 , 0 , 191 ]=S[8*( 0 + 4 )+ 191 ]=S[ 195 ]= 0 $\\
+$A[ 4 , 0 , 192 ]=S[8*( 0 + 4 )+ 192 ]=S[ 196 ]= 0 $\\
+$A[ 4 , 0 , 193 ]=S[8*( 0 + 4 )+ 193 ]=S[ 197 ]= 0 $\\
+$A[ 4 , 0 , 194 ]=S[8*( 0 + 4 )+ 194 ]=S[ 198 ]= 0 $\\
+$A[ 4 , 0 , 195 ]=S[8*( 0 + 4 )+ 195 ]=S[ 199 ]= 0 $\\
+$A[ 4 , 0 , 196 ]=S[8*( 0 + 4 )+ 196 ]=S[ 200 ]= 0 $\\
+
 
 \item Como é feita a conversão de \textit{State Array} para Strings? Incluir um
-exemplo de vocês.
+exemplo de vocês.\\
 
-\item Explicar os cinco Passos de Mapeamento (NIST, pg 19, 3.2 Step Mappings).
-Explicar os algoritmos envolvidos e cada uma das figuras apresentadas (figuras 3
-a 6, páginas 19 até 23).
+Seja \textbf{A} o state array. A string correspondente, denotada por \textbf{S},
+pode ser construído pegando as Linhas (ou Trilhas) de \textbf{A}, da seguinte
+forma, cada par de inteiros $(i,j)\ |\ 0 \le i < 5\ \textbf{e}\ 0 \le j < 5$
+definem a string Linha(i,j) por: $Linha(i,j)=A[i,j,0] \parallel A[i,j,1]
+\parallel A[i,j,2] \parallel A[i,j,0] \parallel A[i,j,w-2] \parallel
+A[i,j,w-1]$. Um exemplo:\\
 
-\item Explicar a permutação $KECCAK-p[b,\ n_r]$.
+$Trilha (0, 0) = A[0, 0, 0] \parallel A[0, 0, 1] \parallel A[0, 0, 2] \parallel
+\ldots \parallel A[0, 0, 62] \parallel A[0, 0, 63]$ corresponde a: $Trilha (0,
+0) = 1 \parallel 0 \parallel 1 \parallel \ldots \parallel 0 \parallel 0$\\
 
-Dado um arranjo de estados, A e também um índice de rodada $i_r$ então a função
-de rodada "Rnd" (A subfunção de rodada da permutação $KECCAK -p$) é uma
+$A[1, 0, 0] = [8(5*1+0)+0] = S[40] = 0$\\
+$A[1, 0, 2] = [8(5*1+0)+1] = S[41] = 0$\\
+$A[1, 0, 3] = [8(5*1+0)+2] = S[42] = 0$\\
+$$\ldots$$
+$A[1, 0, 4] = [8(5*1+0)+62] = S[102] = 0$\\
+$A[1, 0, 5] = [8(5*1+0)+63] = S[103] = 0$\\
+
+$Trilha (1, 0) = A[1, 0, 0] \parallel A[1, 0, 1] \parallel A[1, 0, 2] \parallel
+\ldots \parallel A[1, 0, 62] \parallel A[1, 0, 63]$ corresponde a: $Trilha (1,
+0) = 0 \parallel 0 \parallel 0 \parallel \ldots \parallel 0 \parallel 0$. E
+assim sucessivamente. O que se faz é uma transformação linear $R^3 \leftarrow
+R^2$ das coordenadas da dimensão do arranjo. O mesmo para fazer o contrário
+\underline{String para Linha}.\\
+
+\item Explicar os cinco Passos de Mapeamento (NIST, pg 19, 3.2 Mapeamentos de
+passo). Explicar os algoritmos envolvidos e cada uma das figuras apresentadas
+(figuras 3 a 6, páginas 19 até 23).\\
+
+Primeiro notar que cada módulo (os cinco passos denotados pelas letras gregas
+$\theta, \rho, \pi, \chi, \iota$) são invocados pelas 24 permutações. E devem
+ser aplicadas nessa ordem $\iota(\chi(\pi(\rho(\theta(\textbf{A})))))$, isto é,
+as funções são aplicadas em cima da matriz $A$ de bits (arranjo de estados).
+Todos os algoritmos estão explicados a seguir tem entrada $A$ e saída $A'$.
+Sendo que os limites das variáveis já foram especificados anteriormente. Esses
+algoritmos de transformação dos bits retornarão ao final um arranjo de estados
+atualizado.\\
+
+Algoritmo $\theta(A)$ (DRAFT FIPS 202, pg 19)
+  \begin{enumerate}
+    \item[] \textbf{para} x = 0 \textbf{até} 4 \textbf{faça}
+    \item[] \quad C[x] = a[x, 0]
+    \item[] \quad \textbf{para} y = 1 até 4 \textbf{faça}
+    \item[] \quad \quad C[x] = C[x] $\oplus$ a[x, y]
+    \item[] \quad \textbf{fim para}
+    \item[] \textbf{fim para}
+    \item[] \textbf{para} x = 0 \textbf{até} 4 \textbf{faça}
+    \item[] \quad D[x] = C[x-1] $\oplus$ ROTACIONA(C[x+1], 1)
+    \item[] \quad \textbf{para} y = 0 \textbf{até} 4 \textbf{faça}
+    \item[] \quad \quad A[x,y] = a[x,y] $\oplus$ D[x]
+    \item[] \quad \textbf{fim para}
+    \item[] \textbf{fim para}
+  \end{enumerate}
+
+Exemplo para de saída para o $\theta$:
+\begin{verbatim}
+\end{verbatim}
+
+O mapeamento $\theta$ é linear e foca na \underline{difusão} e é invariante em
+todas as direções. Seu efeito pode ser descrito da seguinte maneira: ele
+trabalha no arranjo todo $5 \times 5 \times w$. Computa as paridades de cada
+coluna e combina elas com o operador $\oplus$. Então faz $\oplus$ com as
+paridades resultantes para cada bit-estado da seguinte forma: $A'[i][j][k] =
+A'[i][j][k] \oplus paridade(A[0\ldots4][j-1][k]) \oplus
+paridade(A[0\ldots4][j+1][k+1])\ \textbf{where}\
+i=0\ldots4;j=0\ldots4;k=0\ldots(w-1)$ Então Esse algorítimo tem por efeito fazer
+$\oplus$ cada bit no arranjo de estado aos seus pares de duas colunas no
+arranjo. Os cálculos são feito usando limites modulares (mod 5) para não
+passarem no limite do arranjo (DRAFT FIPS 202, pg 20).\\
+
+Algoritmo $\rho(A)$ (DRAFT FIPS 202, pg 20)
+  \begin{enumerate}
+    \item $\forall z\ \textit{dentre}\ 0 \le z < w\ \textit{faça}\ A'[0, 0,
+    z] = A[0, 0, z]$
+
+    \item $(x, y) = (1, 0)$
+
+    \item $\textbf{Para}\ t\ \textbf{de}\ 0\ \textbf{até}\ 23:$
+
+    \item[] \quad $\forall z,\ \textit{dentre}\ 0 \le z < w,\
+    \textit{faça}\ A'[x, y, z] = A[x, y, (z – (t + 1)(t + 2)/2)\ \textit{mod}\
+    w];$
+
+    \item[] \quad $(x, y) = (y, (2x + 3y)\ \textit{mod}\ 5);$
+
+    \item \textbf{Retorne} $A'$.\\
+  \end{enumerate}
+
+O módulo $\rho$ rotaciona cada linha de $w-bits$  por um número triangular
+$0,1,3,6,10,15$ O efeito do algoritmo acima ($\rho$) é rotacionar os bits de
+cada linha pela seu $\textit{mod}\ length$, length também chamado
+\textit{offset} o qual depende de x,y fixos nas coordenadas da linha (DRAFT FIPS
+202, pg 20).\\
+
+Algoritmo $\pi(A)$ (DRAFT FIPS 202, pg 21 Mapeamentos de passo)
+  \begin{enumerate}
+    \item $\forall (x,y,z)\ |\ 0 \le x < 5\ \textbf{e}\ 0 \le z < w:$
+    \item[] \quad $y' \leftarrow (x+3y)\ \textbf{mod 5};$
+    \item[] \quad $A'[x,y,z]=A[y',\ x,\ z];$
+    \item \textbf{Retorne} $A'$\\
+  \end{enumerate}
+
+O módulo $\pi$ permuta os w-bits. A permutação segue o seguinte padrão:
+$A[j][2\times i+3\times j][]=A[i][j][]$ O efeito do algoritmo acima é rearranjar
+as posições das linhas. Note que y' sobre uma transformação linear e o arranjo
+permuta as posições de $x,y,z \rightarrow y',x,z$ e $y'$ esta descrito acima no
+algoritmo.\\
+
+Exemplo para saída do código do módulo rho e pi dá para se fazer ao mesmo tempo:
+\begin{verbatim}
+
+\end{verbatim}
+
+Algoritmo $\chi(A)$ (DRAFT FIPS 202, pg 22 Mapeamentos de passo)
+  \begin{enumerate}
+    \item $\forall (x,y,z)\ |\ 0 \le x < 5, 0 \le y < 5, \textbf{e}\ 0 \le z
+    < w:$
+
+    \item[] \quad $A'[x,y,z] = A[x,y,z]\ \oplus\ ((A[(x+1)\ \textbf{mod 5},\
+    y,\ z]\ \oplus\ 1) \bullet\ A[(x+2)\ \textbf{mod}\ 5,\ y,\ z]);$
+
+    \item \textbf{Retorne} $A'$\\
+  \end{enumerate}
+
+Saída do código para primeira iteração da permutação no módulo $\chi$
+\begin{verbatim}
+
+\end{verbatim}
+
+O módulo $\chi$ adiciona o aspecto de \underline{\textbf{não-linearidade}} às
+rodadas de permutações (que são 24). Ele combina os elementos de uma linha
+usando três operadores bit-a-bit $\land,\ \lnot,\ \oplus$. Então ele rescreve o
+resultado no arranjo de estados assim: $A[i][j][k] = A[i][j][k] \oplus \lnot
+A[i][j+1][k]\ \&\ A[i][j+2][k]$ O $A[(x+1)\ \textbf{mod 5},\ y,\ z]\ \oplus
+0b00001$ no passo \textbf{i} do algoritmo $\chi$ acima é para complementar o
+último bit, por exemplo: $0b10101 \oplus 0b00001 = 0b10100$ ou $0b10100 \oplus
+0b00001 = 0b10100$ Isto é 1 $\oplus$ 1 = 0; 1 $\oplus$ 0 = 1; 0 $\oplus$ 1 = 1;
+0 $\oplus$ 0 = 0; (isso é equivalente a adição sem 'resta-um') O ponto
+\underline{escuro} significa multiplicação inteira. O qual nesse caso é
+equivalente a operação $\land$ bit a bit. O efeito do algoritmo acima, é criar
+uma função usando dois bits da mesma linha e aplicar em cada bit. A função é
+não-linear, para dar efeito de confusão. Ele faz uma operação simples de
+$\land$'s encadeados com $\oplus$'s encadeados. Pegando cada bit da linha e
+aplicando a linhas mais abaixo. Que pode ser visto melhor na página 23, figura 6
+(DRAFT FIPS 202, pg 23, Figure 6: $\chi$ aplicado a uma única linha).\\
+
+Algoritmo $\iota(A)$ (DRAFT FIPS 202, pg 19 Mapeamento)
+  \begin{enumerate}
+    \item $\forall (x,y,z)\ |\ 0 \le x < 5, 0 \le y < 5,\ and\ 0 \le z < w,\
+    \textbf{faça}:$
+    \item[] \quad $A'[x, y, z] = A[x, y, z]$
+    \item $RC=0^{w}$
+    \item $\forall j,\ 0\ \textbf{até}\ l:$
+    \item[] \quad $RC[2^{j} - 1] = rc(j+7*i_{r})$
+    \item $\forall z\ |\ 0 \le z < w:$
+    \item[] \quad $A' [0, 0, z] = A'[0, 0, z]\ \oplus\ RC[z]$
+    \item \textbf{Retorne} $A'$\\
+  \end{enumerate}
+
+O módulo $\iota$ insiste em \textbf{\underline{desmembrar}} as simetrias
+causadas pelos outros módulos.\\
+
+Um exemplo usando o algoritmo $\iota$ para primeira permutação.
+\begin{verbatim}
+
+\end{verbatim}
+
+\begin{quotation}
+The mapping $\iota$ consists of the addition of round constants and is aimed at
+disrupting symmetry. (Keccak Reference 3.0, Sec 2.3.5, pg 22, Properties of
+$\iota$)\\
+\end{quotation}
+
+E como isso é feito? Isso é feito fazendo $\oplus$ de um elemento do arranjo (1
+bit) com uma constante de rodada periodicamente aplicada. O módulo tem 24
+constantes para escolher, que são definidas internamente pelo \verb|Keccak-f|
+sem os {\Large ï} (constantes) o mapeamento $\iota$ iria ser simétrico, causando
+todo os mapeamentos para serem simétricos, uma das razões do $\iota$ ser o
+último módulo executado é justamente para desmembrar a simetria, dando
+suscetibilidade a ataques como Slide (Keccak Reference 3.0, Sec 4.1.3, Ataques
+tipo Slide) \footnote{São ataques que exploram a simetria numa primitiva que
+consiste da iteração de um número idêntico de rodadas. No âmbito do $\iota$.
+todas as rodadas são idênticas (no sentido que elas não permutam entre sí, mas
+os bits no arranjo de estados ganham anti-simetria ao decorrer das permutações).
+Nesse caso, isso permite em distinguir propriedades do Keccak-f: a distribuição
+do comprimento dos ciclos irá significativamente diferenciar de um estilo de
+permutação do tipo fortemente aleatória}. Esse parâmetro novo aqui, dentre os
+algoritmos de modulo mapeadores, chamado $i_r$ implica em $l+1$ que será
+reconhecida como a constante da rodada, denotada por \underline{RC}. Cada valor
+gerado por $l+1$ surge da função baseada em um modo de operação chamado
+retroalimentação linear de registrador deslocamento (linear feedback shift
+register) essa função é chamada de rc (DRAFT FIPS 202, pg 23, $rc(t)$), note que
+no passo 2 (ii) temos a concatenação $w$ de zeros.\\
+
+O efeito do algoritmo acima (iota) é modificar alguns bits da Linha(0, 0) da
+maneira que fica dependente do índice $i_r$ (i rodadas). As outras 24 linhas não
+são afetadas pelo algoritmo iota. Além da entrada ser o state array \textbf{A},
+também temos \textit{round index} $i_r$.\\
+
+\item Explicar a permutação \verb|KECCAK-p[b, n]|.\\
+
+O \verb|KECCAK-p| o tamanho fixo de string que serão permutadas, chamado de
+espessura da permutação, e também o número de iterações da transformação
+(rodada) interna. A espessura é o $b$ e o número de rodadas (trans. internas) é
+$n_r$.\\
+
+Dado um arranjo de estados $A$ e também um índice $i_r$ então a função de rodada
+''Rodada''\footnote{Rodada ou ''Rnd'' ou ''Round'' é uma função da permutação
+\textsc{KECCAK-p}, no código em Python3, que vem em anexo ao artigo, essa função
+se chama \textit{Round}. Esse código está disponível em:
+\href{http://keccak.noekeon.org/}{http://keccak.noekeon.org/}} é uma
 transformação que resulta da aplicação dos Passos de Mapeamento $\theta,\ \rho,\
-\pi,\ \chi,\ \iota$ nessa mesma ordem, resumindo:
+\pi,\ \chi,\ \iota$ nessa mesma ordem, isto é: $Rnd(A, i_r) =
+\iota(\chi(\pi(\rho(\theta(A)))), i_r)$.\\
 
-$Rnd(A, i_r) = \iota(\chi(\pi(\rho(\theta(A)))), i_r)$
+A permutação \verb|KECCAK-p[b, n]| consiste de $n_r$ iteração do procedimento
+$Rnd$, como especificado no Algoritmo 7, \verb|KECCAK-p[b, n](S)|.\\
 
-A permutação $KECCAK -p[b, n r ]$ consiste de $n_r$ iteração do procedimento
-$Rnd$, como especificado no Algoritmo 7.
-
-Segue o Algoritmo 7: $KECCAK -p[b, n_r](S)$
-
-Entrada: Mensagem $S$ de tamanho $b$; Número de rodadas $n_r$. Saída: Mensagem
-$S'$ de tamanho $b$. Algoritmo:
-
-Converter $S$ em Arranjo de Estados $A$, como descrito na Sec. 3.1.2
-\cite{nist}.
-
-Para $i_r$ de $2l + 12 - n_r \textbf{ até } 2l + 12 - 1$, $A = Rnd(A,\ i_r)$.
-
-Converter $A$ na string $S'$ de tamanho $b$, como descrito na Sec. 3.1.3.
-\cite{nist}
-
-Retornar $S'$.
-
-\begin{enumerate}
-\item Compare esta função com a $Keccak -f$.
-\end{enumerate}
-
-A subfamília $Keccak -f$ de permutações, originalmente definida em
-\cite{bertoni}, é uma \underline{especialização} da subfamília $Keccak -p$ para
-o caso $n_r = 12 + 21$.
-
-$$Keccak -f[b] = Keccak -p[b, 12 + 2l]$$
-
-Consecutivamente, a permutação $Keccak -p[1600, 24]$, o qual delineia as 6
-funções $SHA^3$, é \underline{equivalente} ao $Keccak -f [1600]$. As rodadas do
-$Keccak -f [b]$ são indexadas de $0$ até $11 + 21$. O resultado é indexado
-dentre o Passo 2 do Algoritmo 7 pois a rodada do $Keccak -p [b, n_r]$ bate com a
-última rodada do $Keccak -f [b]$, e vice versa.
-
-Por exemplo, $Keccak -p[1600, 19]$ é equivalente para com a última rodada de
-número 19 do $Keccak -f [1600]$. Similarmente, $Keccak -f [1600]$ é equivalente
-para com a última rodada de número 24 do $Keccak -p [1600, 30]$; mas nesse caso,
-o rodadas precedentes para o $Keccak -p[1600, 30]$ são indexadas de $-6$ à $-1$.
-\item Descrever o \textit{Framework Sponge Construction}.
+  \begin{enumerate}
+    \item \textbf{Entrada}: Uma mensagem $S$ de tamanho $b$; Número de rodadas
+    $n_r$.
+    \item \textbf{Saída}: Uma mensagem $S'$ de tamanho $b$.
+    \item \textbf{Converter} $S$ em Arranjo de Estados $A$, como descrito na
+    Sec. 3.1.2
+    \cite{nist}.
+    \item $l \leftarrow len(S)$
+    \item \textbf{Para} $i_r$ de $(2l + 12 - n_r)\ \textbf{até}\ (2l + 12 - 1):$
+    \item[] \quad $A \leftarrow Rnd(A,\ i_r)$.
+    \item \textbf{Converter} $A$ na \textbf{string} $S'$ de tamanho $b$, como
+    descrito na (DRAFT FIPS 202, sec. 3.1.3 \cite{nist})
+    \item \textbf{Retornar} $S'$.\\
+  \end{enumerate}
 
 \begin{enumerate}
 
-\item Explique a figura 7 e o Algoritmo 8.
+  \item Compare esta função com a \verb|Keccak-f|.\\
+
+      A família \verb|Keccak-f| de permutações, originalmente definida em
+      \cite{bertoni}, é uma especialização da família
+      \verb|Keccak-p| para o caso $n_r = 12 + 21$. \verb|Keccak-f[b]|
+      \verb|Keccak-p[b, 12 + 2l]| (DRAFT FIPS 202, sec. 3.4, pg 25)\\
+
+      Consecutivamente, temos que a permutação \verb|Keccak-p[1600, 24]|, o qual
+      delineiam as 6 funções SHA3, é equivalente ao \verb|Keccak-f[1600]|. As
+      rodadas do \verb|Keccak-f[b]| são indexadas de 0 até (11 + 21). O
+      resultado é indexado dentre o Passo 2 do Algoritmo 7 pois a rodada do
+      \verb|Keccak-p[b, n]| bate com a última rodada do \verb|Keccak-f[b]|, e
+      vice versa.\\
+
+      Por exemplo, \verb|Keccak-p[1600, 19]| é equivalente para com a última
+      rodada de número 19 do \verb|Keccak-f[1600]|. Similarmente,
+      \verb|Keccak-f[1600]| é equivalente para com a última rodada de número 24
+      do \verb|Keccak-p[1600, 30]|; mas nesse caso, o rodadas precedentes para o
+      \verb|Keccak-p[1600, 30]| são indexadas de -6 à -1. (DRAFT FIPS 202, sec.
+      3.4, pg 25).
 
 \end{enumerate}
 
-\item Explique a família de funções esponja Keccak, conforme seção 5.
+\item Descrever o \textit{Framework Sponge Construction}.\\
 
+A construção esponja para funções de hash. pi são blocos da string de entrada,
+zi são blocos do hash de saída. (DRAFT FIPS 202, Figure 7: The sponge
+construction). A construção \verb|[f, pad, r]| com entrada sendo o comprimento,
+A "esponja"\ é uma função que lembra as "Redes de Feistel". A saída é arbitrária
+e se dá a partir de permutações de tamanho fixado pela norma SHA3 e constrói a
+função esponja a partir da permutação $f$, o a regra de padding "pad" e o
+parâmetro bitrate $r$ \cite{bertoni}.\\
 
+\begin{table}[ht!]
+\centering
+\label{sha3tablepar}
+\begin{tabular}{|l|l|l|l|l|}
+\hline Tam. digest & 224 & 256 & 384 & 512 \\
+\hline Tam. mensagem & $\infty$ & $\infty$ & $\infty$ & $\infty$ \\
+\hline Tam. bloco (bitrate r) & 1152 & 1088 & 832 & 576 \\
+\hline Tam. palavra & 64 & 64 & 64 & 64 \\
+\hline Nro de rodadas & 24 & 24 & 24 & 24 \\
+\hline Cap. c & 448 & 512 & 768 & 1024 \\
+\hline Resis. colisões & $2^{112}$ & $2^{118}$ & $2^{192}$ & $2^{256}$ \\
+\hline Resis. 2ª pre-imagem & $2^{224}$ & $2^{256}$ & $2^{384}$ & $2^{512}$ \\
+\hline
+\end{tabular}
+\caption{Parâmetros SHA-3, Todas as medições estão em bits. Atente para as duas
+últimas linhas, pois as demais são para se habituar para a solução da construção
+esponja. Essa tabela mostra que essa função esponja tem as resistências dadas em
+quantidades de entradas que se tem que gerar para cair no caso do paradoxo do
+aniversário, e possivelmente ficar sujeito aos ataques vistos no começo do
+artigo \ref{tiposataque}. Todos esses valores nas últimas duas linhas são
+intratáveis computacionalmente.}
+\end{table}
 
-\item Explique as especificação da função SHA3, conforme Seção 6.
+  \begin{enumerate}
+    \item Explique a figura 7 e o Algoritmo 8.\\
+
+    A figura 7 representa a seguite construção em forma paramétrica
+    \cite{gbertoni}: $$Z = ESPONJA[f, pad, r](M, d)$$ que consiste em colocar
+    ''pad'' e ''inchar'' o conteúdo fazendo $\oplus's$ do \underline{padding}
+    com os $r$ bits menos significativos $r$ é o valor de rate, ou bitrate.\\
+  \end{enumerate}
+
+\item Explique a família de funções esponja Keccak, conforme seção 5.\\
+
+Keccak é a família de "funções esponja" \cite{bertoni}. Uma característica dela
+é \underline{padding rule} (regra de preenchimento) chamada \textit{multi-rate
+padding} (preenchimento multi-frequência, explicado melhor nessa seção). Os
+parâmetros e as permutações intrínsecas para a família Keccak são descrições
+nessa seção também, e o conjunto de famílias da menor a maior ajudam a definir
+suficientemente as funções do SHA-3 na próxima seção.\\
+
+A regra de preenchimento multi-frequência, denotada por $pad1(0^{*})1$, é
+especificada no Algoritmo 9 (DRAFT FIPS 202, pg 27, $pad1(0^{*})1(x,m)$).\\
+
+Algorithm pad10*1(x, m) (DRAFT FIPS 202, pg 27)
+
+  \begin{enumerate}
+    \item \textbf{Entrada:} Inteiro Positivos x, m
+    \item \textbf{Saída:} String Z, onde $m+len(Z)$ é positivo e múltiplo de x.
+    \item $j \leftarrow -(m+2)\ mod\ x$
+    \item \textbf{Retorne} $1\ ||\ 0^{j}\ ||\ 1$\\
+  \end{enumerate}
+
+O efeito do algoritmo acima é criar um preenchimento. O $0^{*}$ em $pad10^{*}1$
+vem de linguagens formais, e significa "nenhum zero ou muitos zeros repetidos",
+ou seja, $1\ ||\ (0^{j})\ ||\ 1$, onde zeros obedece múltiplo de $j$. Note que
+não precisa do (), estou apenas denotando um grupo.\\
+
+A família de funções esponjas Keccak é então a soma da função de permutação
+intrínseca padrão \verb|KECCAK -p[b, 2l +12]| (DRAFT FIPS 202, Sec 3.3) mais
+regra de preenchimento $pad10^{*}1$ (DRAFT FIPS 202, Sec 5.1). A família é
+parametrizada por qualquer escolha de rate $r$ e de capacidade $c$ (define o
+nível de segurança) da qual $r+c$ pertence ao conjunto de possibilidade {25, 50,
+100, 200, 400, 800, 1600}. Nós obtemos a função esponja \verb|Keccak[r,c]|, com
+parâmetros de capacidade $c$ e bitrate (ou apenas rate) $r$ (define a
+velocidade), se nós aplicarmos isso na função esponja \verb|Keccak-f[r+c]| e
+também aplicando juntamento um preenchimento (padding) específico à mensagem de
+entrada.\\
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline Capacidade [c] & Rate [r] & Força [s] \\
+    \hline 256 bits & 1344 bits & 128 bits \\
+    \hline 384 bits & 1216 bits & 192 bits \\
+    \hline 512 bits & 1088 bits & 256 bits \\
+    \hline
+  \end{tabular}
+  \caption{Rate e Capacidade decidem a Força, por exemplo Rate + Capacidade =
+  1600 (Keccak Padrão)}
+\end{table}
+
+Quando restringimos ao caso b=1600, a família Keccak é denotada simplesmente
+por Keccak[c]; nesse caso $r$ é determinado pela escolha de $c$. Reusando a
+própria função veja (DRAFT FIPS 202, pg 27).\\
+
+KECCAK[c] = [KECCAK-p[1600, 24], pad10*1, 1600 - c]\\
+
+Assim, dado uma mensagem $M$ e uma saída de tamanho $d$. Aplicamos $M$ da
+seguinte forma na função esponja.\\
+
+KECCAK[c](M, d) = [KECCAK-p[1600, 24], pad10*1, 1600 – c](M,
+d)\\
+
+\item Explique as especificações da função SHA3, conforme Seção 6.\\
+
+O corpo SHA-3 contém 4 funções \underline{hash}, e 2 XOFs \ref{sha3-inicial}.
+Explicarei cada uma delas a seguir nos itens abaixo.\\
 
 \begin{enumerate}
 
-\item Funções de hash SHA3.
+\item Funções de hash SHA3.\\
 
-\item Funções de Saída Estendida.
+Antes de mais nada deve-se entender que o SHA3 também utiliza $M$ para Mensagem.
+porém ele adiciona 2 bits (ou 4 bits) concatenados à $M$ em \underline{todas}
+das funções hash (DRAFT FIPS 202, Sec 5.2, pg 28). Nesse caso são 2 bits, como
+está previsto no documento na seção 6.1, $b_{0}b_{1}$ são os bits a serem
+concatenados, mais descrições deles adiante.\\
+
+Na seção 6.2 como podemos ver que o SHA3-224(M) utiliza o
+Keccak[448]. Com capacidade $c$ de 448 bits. E assim sucessivamente, aumentando
+as capacidade para 512, 767, 1024. E é exatamente isso que é passado para a
+função esponja Keccak.\\
+
+$SHA3_{224}(M) = f[448](M || b_{0}b_{1},\ 224)$\\
+
+$SHA3_{256}(M) = f[512](M || b_{0}b_{1},\ 256)$\\
+
+$SHA3_{384}(M) = f[768](M || b_{0}b_{1},\ 384)$\\
+
+$SHA3_{512}(M) = f[1024](M || b_{0}b_{1},\ 512)$\\
+
+Note que $f$ é a função esponja Keccak. Em cada caso, a capacidade é dobrada em
+tamanho consecutivamente \underline{\textbf{dobra}} o tamanho (comprimento) da
+resumo pós ''trituração'' (STALLINGS, Sec 11.1, pg 314 - Funções de Trituração
+Criptográficas), isto é: $c = 2*d$. Os dois bits que são concatenados à mensagem
+(i.e, 01) suportam o \textit{domain separation}; eles distinguem a mensagem para
+o SHA3. Para assegurar que a mensagem pode ser dividida em blocos pares de
+tamanho $r$ (bitrate) a regra do padding é aplicada ou seja, o padrão
+"bit-a-bit" $pad10^{*}1$: bit 1, zero ou mais 0's (máximo de r - 1), 1 bit.\\
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline Function & Bitrate & Capacity & Output size \\
+    \hline SHA3-224 & 1152 & 448 & 224 \\
+    \hline SHA3-256 & 1088 & 512 & 256 \\
+    \hline SHA3-384 & 832 & 768 & 384 \\
+    \hline SHA3-512 & 576 & 1024 & 512 \\
+    \hline SHAKE128 & 1344 & 256 & 0 \\
+    \hline SHAKE256 & 1088 & 512 & 0 \\
+    \hline
+  \end{tabular}
+  \caption{Tabela de parâmetros para o Keccak}
+\end{table}
+
+Isso é preciso pois está na norma da construção da esponja Keccak, a prova de
+conceito para o resumo criptográfico usando Keccak existe que a taxa seja
+codificada dessa maneira no bloco final ("multi rate padding"). O último DRAFT
+FIPS 202 coloca os bits de concatenação para as funções de resumo criptográfico
+SHA3 como sendo $b_{0},\ b_{1} = (0,\ 1)$. Isso provê \textit{domain separation}
+para os SHAKEs (SHA3+Keccak)\footnote{Separação de domínio é uma maneira de
+separar informação dentro de domínios logicamente definidos}. A seguir estão
+explicadas as funções SHAKE's.\\
+
+\item Funções de Saída (Vazão) Estendida.\\
+
+As duas SHA3 XOFs \ref{sha3-inicial}, SHAKE128 e SHAKE256, são definidas de duas
+funções intermediárias (descritas abaixo), chamas RawSHAKE128 e RawSHAKE256, o
+qual são definidas a partir de? Keccak[c=capacity]) (DRAFT FIPS 202, Sec 5.2).\\
+
+RawSHAKE128(M, d) = KECCAK[256](M $||$ $b_{0}b_{1}$, d)\\
+
+RawSHAKE256(M, d) = KECCAK[512](M $||$ $b_{0}b_{1}$, d)\\
+
+Os dois bits que são concatenados à mensagem, isto é.; $b_{0}b_{1}=11$ (DRAFT
+FIPS 202, pg 28), suportam \textit{domain separation}. As duas XOFs são (só
+muda o nome de RawSHAKE128 para SHAKE128) e RawSHAKE256 para SHAKE256):\\
+
+Nesse caso, os bits 11 são concatenados à mensagem para compatibilidade com o
+esquema de codificação \underline{Sakura}. O Sakura-scheme é um hash distribuído
+em estrutura de árvore (grafo de nós direcional)\cite{sakura}. Esse esquema
+flexibiliza o desenvolvimento dos XOFs. Além disso, possibilita a computação de
+forma paralela, permitindo computar, atualizar resumos criptográficos de
+mensagens longas com mais eficiência. As funções de vazão-estendida tem o sufixo
+que permite compatibilidade com o esquema Sakura de árvores hash. Para SHA3-n, o
+FIPS 202 configura $c = 2n$, assim quem estivesse implementando precisaria criar
+um complemento em cima dessa equação para ter 2 blocos de saída (como uma
+máscara), e isso iria ser penoso dado que o SHA3-n obtém seus resultados
+truncando a saída do Keccak. As funções de vazão-estendida são definidas em
+dois passos \cite{sakura}:\\
+
+$SHAKE128(M, d) = RawSHAKE128(M || 11, d)$\\
+
+$SHAKE256(M, d) = RawSHAKE256(M || 11, d)$\\
+
+Os dois XOF's SHA-3 podem também ser definidos diretamente a partir do Keccak,
+da seguinte maneira:\\
+
+$SHAKE128(M, d) = KECCAK[256] (M || 1111, d)$\\
+
+$SHAKE256(M, d) = KECCAK[512] (M || 1111, d)$\\
 
 \end{enumerate}
 
-\item Apresente a análise de segurança conforme Apêndice A.1.
+\item Apresente a análise de segurança conforme Apêndice A.1.\\
 
-\item Gere os seus próprios exemplos (diferente do NIST) conforme Apêndice A.2.
+Vou continuar a partir da explicação no começo desse trabalho, pois no apêndice
+A.1.1 tem muita recapitulação. A primeira coluna da tabela 3 (pg 22) mostra as
+famílias de hash criptográfico, e
+colisão, pré imagem, segunda pré imagem em função da vazão (\textit{output
+size}). As quase
+
+
+\item Gere os seus próprios exemplos (diferente do NIST) conforme Apêndice
+A.2.\\
 
 \end{enumerate}
 
-\item Apresente uma implementação do SHA3.
+\item Apresente uma implementação do SHA3.\\
+
+O código está comentado no arquivo \verb|keccak/keccak.py|. E a implementação\\
 
 \begin{enumerate}
 
-\item Descreva a implementação.
+\item Descreva a implementação.\\
+
+A descrição está no arquivo \verb|keccak/keccak.py|.\\
 
 \item Mostre na implementação onde se da cada passo importante do cálculo do
-hash.
+hash.\\
+
+As partes cruciais para o calculo do hash são:
+  \begin{enumerate}
+    \item Preenchimento (Padding)
+    \item Absorvição da Esponja (Absorving)
+    \item Espremida da Esponja (Squeezing)
+  \end{enumerate}
+
+Esta comentado no arquivo \verb|keccak/keccak.py|.\\
 
 \item Execute a implementação passo a passo, mostrando o maior número possível
-de saídas.
+de saídas.\\
+
+
 
 \end{enumerate}
 
@@ -193,24 +757,32 @@ de saídas.
 Use um mesmo computador e implementações padrão para esta comparação. O
 resultado da comparação deve ser em termos de tamanhos de arquivos dos quais
 hashes são calculados e quanto tempo para hash (uma média) demora para ser
-calculado.
+calculado.\\
 
-\item Apresente uma crítica ao SHA3.
+\item Apresente uma crítica ao SHA3.\\
 
 \begin{enumerate}
 
-\item O que ele é melhor ou diferente em relação a outros hash?
+\item O que ele é melhor ou diferente em relação a outros hash?\\
 
 \item Quanto tempo você acha (e por que) o SHA3 será considerado
-seguro?
+seguro?\\
 
 \end{enumerate}
 
 \end{enumerate}
 
+\pagebreak
 \begin{thebibliography}{9}
+\bibitem{sakura} G. Bertoni, J. Daemen, M. Peeters, and G. Van Assche, “S AKURA
+: a flexible coding for tree hashing,” http://keccak.noekeon.org/Sakura.pdf.
+
+\bibitem {gbertoni} G. Bertoni, J. Daemen, M. Peeters, and G. Van Assche,
+“Cryptographic sponge functions,” January 2011,
+http://sponge.noekeon.org/CSF-0.1.pdf.
+
 \bibitem{nist} NIST Computer Security Division (CSD). SHA-3 Standard:
-Permutation-Based Hash and Extendable-Output Functions. 2014. 27p.
+Permutation-Based Hash and Extendable-Output Functions. 2014.
 
 \bibitem{fips} Federal Information Processing Standards Publication 180-4,
 Secure Hash Standard (SHS), Information Technology Laboratory, National
@@ -222,7 +794,7 @@ http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf.
 
 \bibitem{keccak} G. Bertoni, J. Daemen, M. Peeters, and G. Van Assche, “Keccak
 Specifications,” Submission to NIST (Round 3), January 2011,
-http://keccak.noekeon.org/Keccak- submission-3.pdf.
+http://keccak.noekeon.org/Keccak-submission-3.pdf.
 
 \bibitem{bertoni} G. Bertoni, J. Daemen, M. Peeters, and G. Van Assche, “The K
 ECCAK reference, Version 3.0,” January 2011,
