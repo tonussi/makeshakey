@@ -1,41 +1,146 @@
 #! /usr/bin/pythonw
-# The Keccak sponge function, designed by Guido Bertoni, Joan Daemen,
-# Michaël Peeters and Gilles Van Assche. For more information, feedback or
-# questions, please refer to our website: http://keccak.noekeon.org/
-# 
-# Implementation by Renaud Bauvin,
-# hereby denoted as "the implementer".
-# 
-# To the extent possible under law, the implementer has waived all copyright
-# and related or neighboring rights to the source code in this file.
-# http://creativecommons.org/publicdomain/zero/1.0/
+# -*- coding: utf-8 -*-
+
+import hashlib
+import time
+import string
+import random
+from base64 import b16encode
 
 from keccak import Keccak
 
 
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        print('%2.5f segundos' % (te - ts))
+        return result
+
+    return timed
+
+
+@timeit
+def BLOCOS_SHA_224(blocks):
+    for b in blocks:
+        hashlib.sha224(b).hexdigest()
+    return str(len(blocks)) + 'blocos processados com sha224'
+
+
+@timeit
+def BLOCOS_SHA_256(blocks):
+    for b in blocks:
+        hashlib.sha256(b).hexdigest()
+    return str(len(blocks)) + 'blocos processados com sha256'
+
+
+@timeit
+def BLOCOS_SHA_384(blocks):
+    for b in blocks:
+        hashlib.sha384(b).hexdigest()
+    return str(len(blocks)) + 'blocos processados com sha384'
+
+
+@timeit
+def BLOCOS_SHA_512(blocks):
+    for b in blocks:
+        hashlib.sha512(b).hexdigest()
+    return str(len(blocks)) + ' blocos processados com sha512'
+
+
+def testBlocos():
+    keccak = Keccak(b=1600)
+
+    nroBlocos = 1024  # unidades
+    tamanhoBloco = 64  # bytes
+
+    blocks = []
+    for x in range(nroBlocos):
+        s = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(tamanhoBloco))
+        s = b16encode(s.encode('utf-8')).decode('utf-8')
+        blocks.append(s)
+
+    # cada palavra no block tem 512 bytes
+    # cada byte tem 8 bits totalizando 512 * 8 = 4096 bits
+    # o bloco tem 24 palavras distintas de 4096 bits
+
+    print(tamanhoBloco, 'bytes/bloco *', nroBlocos, 'blocos -- totalizando', nroBlocos * tamanhoBloco // 1000,
+          'KB de dados\n')
+
+    print('Tempo da familia SHA-3, processando os blocos\n')
+
+    print('\item')
+    print(keccak.BLOCOS_SHA3_224(blocks, verbose=False))
+    print()
+
+    print('\item')
+    print(keccak.BLOCOS_SHA3_256(blocks, verbose=False))
+    print()
+
+    print('\item')
+    print(keccak.BLOCOS_SHA3_384(blocks, verbose=False))
+    print()
+
+    print('\item')
+    print(keccak.BLOCOS_SHA3_512(blocks, verbose=False))
+    print()
+
+    print('\item')
+    print(keccak.BLOCOS_SHAKE128(blocks, 1024, verbose=False))
+    print()
+
+    print('\item')
+    print(keccak.BLOCOS_SHAKE256(blocks, 1024, verbose=False))
+    print()
+
+    print('Tempo da familia SHA-2, processando os blocos\n')
+
+    blocks = [elem.encode('utf-8') for elem in blocks]
+
+    print('\item')
+    print(BLOCOS_SHA_224(blocks))
+    print()
+
+    print('\item')
+    print(BLOCOS_SHA_256(blocks))
+    print()
+
+    print('\item')
+    print(BLOCOS_SHA_384(blocks))
+    print()
+
+    print('\item')
+    print(BLOCOS_SHA_512(blocks))
+    print()
+
+
+hexformatter = lambda m: ' '.join(m[i:i + 16] for i in range(0, len(m), 16))  # função de utilidade
+
+
 def main():
-    myKeccak = Keccak(b=1600)
+    option = input('Verificar tempos de processamento de blocos? (s/n): ')
 
+    if option == 's':
+        testBlocos()
+    else:
+        text = input('\nMensagem (para testar todos os digests sha3: ')
+        print('\nComparar com www.di-mgt.com.au/sha_testvectors.html')
 
-    # The four SHA-3 hash functions are defined from the KECCAK [c] function specified in Sec. 5.2 by
-    # appending two bits to the message and by specifying the length of the output, as follows:
-
-    # SHA3-224(M) = KECCAK [448] (M || 01, 224); (56  byte)
-    #myKeccak.Keccak((16, 'bbbb' + '01'), r=1152, c=448, n=224, verbose=True)
-    # SHA3-256(M) = KECCAK [512] (M || 01, 256); (64  byte)
-    #myKeccak.Keccak((16, 'bbbb' + '01'), r=1088, c=512, n=256, verbose=True)
-    # SHA3-384(M) = KECCAK [768] (M || 01, 384); (96  byte)
-    #myKeccak.Keccak((16, 'bbbb' + '01'), r=832, c=768, n=384, verbose=True)
-    # SHA3-512(M) = KECCAK [1024] (M || 01, 512). (128 byte)
-    #myKeccak.Keccak((16, 'bbbb' + '01'), r=576, c=1024, n=512, verbose=True)
-
-    # The two SHA-3 XOFs can also be defined directly from K ECCAK , as follows:
-
-    # SHAKE128(M, d) = KECCAK [256] (M || 1111, d),
-    myKeccak.Keccak((16, 'bbbb' + '11'), r=1344, c=256, n=0, verbose=True)
-    # SHAKE256(M, d) = KECCAK [512] (M || 1111, d).
-    #myKeccak.Keccak((16, 'bbbb' + '11'), r=1088, c=512, n=0, verbose=True)
-
+        keccak = Keccak(b=1600)
+        hexstring = b16encode(text.encode('utf-8')).decode('utf-8')
+        output = keccak.SHA3_224(hexstring, verbose=True)
+        print('\nResumo: %s \n' % hexformatter(output))
+        # output = keccak.SHA3_256(hexstring, verbose=False)
+        # print('\nResumo: %s \n' % hexformatter(output))
+        # output = keccak.SHA3_384(hexstring, verbose=False)
+        # print('\nResumo: %s \n' % hexformatter(output))
+        # output = keccak.SHA3_512(hexstring, verbose=False)
+        # print('\nResumo: %s \n' % hexformatter(output))
+        # output = keccak.SHAKE128(hexstring, verbose=False)
+        # print('\nResumo: %s \n' % hexformatter(output))
+        # output = keccak.SHAKE256(hexstring, verbose=False)
+        # print('\nResumo: %s \n' % hexformatter(output))
 
 if __name__ == "__main__":
     main()
