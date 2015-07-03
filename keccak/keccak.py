@@ -1,79 +1,54 @@
 #! /usr/bin/pythonw
-# A função esponja Keccak, desenvolvida por Guida Bertoni, Joan Daemen,
-# Michaël Peeters e Gilles Van Assche. Para mais informações. retornos ou
-# questões. Por favor visite o website: http://keccak.noekeon.org/
-# Implementação de Renaud Bauvin,
-# http://creativecommons.org/publicdomain/zero/1.0/
 
 import math
+import time
 
 
-class KeccakError(Exception):
-    """Classe de excecao padrao usada pela implementacao Keccak implementation
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        print('%r - %2.5f sec' % (method.__name__, te - ts))
+        return result
 
-    Modo de Usar: raise KeccakError.KeccakError("Texto a ser mostrado")"""
+    return timed
 
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+# Utility lambda for printing strings
+hexformatter = lambda m: ' '.join(m[i:i + 16] for i in range(0, len(m), 16))
 
 
-class Keccak:
-    """
-    Classe implementando a função esponja Keccak
-    """
+class Keccak:  # Classe que implementa a função esponja
 
     def __init__(self, b=1600):
-        """Construtor:
+        """Constructor:
 
-        Parametro b, precisa ser! dentre {25, 50, 100, 200, 400, 800,  1600 (default value)}"""
+        b: parameter b, must be 25, 50, 100, 200, 400, 800 or 1600 (default value)"""
+
+        # set keccak innner encoding
+        self.encoding = 16
+
         self.setB(b)
 
     def setB(self, b):
-        """Coloca valor do parametro b (e entao em w (word block), l (length) e nr (numero de rodadas) tambem)
+        assert b in [25, 50, 100, 200, 400, 800, 1600], 'Valores válidos para b: 25, 50, 100, 200, 400, 800 or 1600'
 
-        Parameter b, precisa ser! dentre {25, 50, 100, 200, 400, 800, 1600}
-        """
-
-        if b not in [25, 50, 100, 200, 400, 800, 1600]:
-            raise KeccakError.KeccakError('Valor errado para b - usar 25, 50, 100, 200, 400, 800 or 1600')
-
-        # Atualiza todos os parametros em funcao do valor configurado para b
-        self.b = b  # b bits para caber no arranjo de estados
-        self.w = b // 25  # altura das colunas do arranjo de estados
-        self.l = int(math.log(self.w, 2))
-        self.nr = 12 + 2 * self.l  # numero de rodadas
+        # Update all the parameters based on the used value of b
+        # Parâmetros
+        self.b = b  # b : largura da permutação (tamanho do estado)
+        self.w = b // 25  # w : raia
+        self.nr = 12 + 2 * int(math.log(self.w, 2))  # nr: quantidade de rodadas
 
     # Constants
 
     # Constantes de rodada ver Sec 3.2.5 Específicação
     # do algoritmo iota, pg 23 - Step Mappings (Draft Fips 202)
-    RC = [0x0000000000000001,
-          0x0000000000008082,
-          0x800000000000808A,
-          0x8000000080008000,
-          0x000000000000808B,
-          0x0000000080000001,
-          0x8000000080008081,
-          0x8000000000008009,
-          0x000000000000008A,
-          0x0000000000000088,
-          0x0000000080008009,
-          0x000000008000000A,
-          0x000000008000808B,
-          0x800000000000008B,
-          0x8000000000008089,
-          0x8000000000008003,
-          0x8000000000008002,
-          0x8000000000000080,
-          0x000000000000800A,
-          0x800000008000000A,
-          0x8000000080008081,
-          0x8000000000008080,
-          0x0000000080000001,
-          0x8000000080008008]
+    RC = [0x0000000000000001, 0x0000000000008082, 0x800000000000808A, 0x8000000080008000,
+          0x000000000000808B, 0x0000000080000001, 0x8000000080008081, 0x8000000000008009,
+          0x000000000000008A, 0x0000000000000088, 0x0000000080008009, 0x000000008000000A,
+          0x000000008000808B, 0x800000000000008B, 0x8000000000008089, 0x8000000000008003,
+          0x8000000000008002, 0x8000000000000080, 0x000000000000800A, 0x800000008000000A,
+          0x8000000080008081, 0x8000000000008080, 0x0000000080000001, 0x8000000080008008]
 
     # Constantes de rotacao
     # Ver sec. 3.2.2 Specification of ρ DRAFT FIPS 202
@@ -82,7 +57,10 @@ class Keccak:
     # “The K ECCAK reference, Version 3.0,” January 2011,
     # http://keccak.noekeon.org/Keccak-reference-3.0.pdf.
 
-    r = [[0, 36, 3, 41, 18], [1, 44, 10, 45, 2], [62, 6, 43, 15, 61], [28, 55, 25, 21, 56],
+    r = [[0, 36, 3, 41, 18],
+         [1, 44, 10, 45, 2],
+         [62, 6, 43, 15, 61],
+         [28, 55, 25, 21, 56],
          [27, 20, 39, 8, 14]]
 
     # Essa é a tabela da secao 3.2.2 - DRAFT FIPS 202
@@ -97,140 +75,110 @@ class Keccak:
     # | y = 3 | 21    | 136   | 105   | 45    | 15    |
     # +-------+---------------------------------------+
 
-    # r = [[153, 231, 3, 10, 171], [55, 276, 36, 300, 6], [28, 91, 0, 1, 190], [120, 78, 210, 66, 253],
-    #     [21, 136, 105, 45, 15]]
+    # indices_rotacao = [[153, 231, 3, 10, 171],
+    #                    [55, 276, 36, 300, 6],
+    #                    [28, 91, 0, 1, 190],
+    #                    [120, 78, 210, 66, 253],
+    #                    [21, 136, 105, 45, 15]]
 
 
-    def rot(self, x, n):
+    def rot(self, x, n, verbose=False):
         """Rotacao bit-a-bit (para a esquerda) n bits"""
 
         n = n % self.w  # n tem que estar entre 0 e w (w = b // 25)
         res = ((x >> (self.w - n)) + (x << n)) % (1 << self.w)
-        print('Rotacao prevista', res)
-        return res  # Rotacao bit-a-bit (para a esquerda) n bits mas considerando \
+        if verbose:
+            print('Rotacionar Esquerda(' + str(x) + ',' + str(n) + '[bits]) = ' + str(res))
+        return res
+        # Rotacao bit-a-bit (para a esquerda) n bits mas considerando \
         # len(string de bits) == w bits long
 
-    def fromHexStringToLane(self, string):
-        """Converte a STRING de bytes escrita em HEXADECIMAL, para uma linha (row) valor"""
+    def fromHexStringToLane(self, hexstring, verbose=True):  # Troca a ordem dos bytes para Little Endian
+        assert len(hexstring) % 2 == 0, "A mensagem não termina com um byte completo"
+        # Converte uma hexstring para um valor inteiro
 
-        if len(string) % 2 != 0:  # Analisa se o string tem um numero par de caracteres
-            raise KeccakError.KeccakError(
-                "String tem que terminar com byte completo")  # Erro caso string nao termine com byte completo
+        if verbose:
+            print("String antes da conversão da linha: %s (base 16)" % hexformatter(hexstring))
 
-        # Realiza a modificacao
-        temp = ''
-        nrBytes = len(string) // 2  # calcula nro de bytes usando nroCaracteres // 2 p.e: 0xABCD = 0b1010101111001101
-        # cada byte tem 8 bits, entao 2 bytes para 0xABCD
+        byte_array = [hexstring[i:i + 2] for i in range(0, len(hexstring), 2)]
 
-        for i in range(nrBytes):  # itera por todos os bytes da string dados por nroCaracteres // 2
-            offset = (nrBytes - i - 1) * 2  # esse offset pega de 2 em 2 bytes
-            # print("nrBytes:", nrBytes, "Indice:", i, "Offset:", offset)
-            # nrBytes: 8 Indice: 0 Offset: 14
-            # nrBytes: 8 Indice: 1 Offset: 12
-            # nrBytes: 8 Indice: 2 Offset: 10
-            # nrBytes: 8 Indice: 3 Offset: 8
-            # nrBytes: 8 Indice: 4 Offset: 6
-            # nrBytes: 8 Indice: 5 Offset: 4
-            # nrBytes: 8 Indice: 6 Offset: 2
-            # nrBytes: 8 Indice: 7 Offset: 0
-            # E se repete ciclicamente
-            temp += string[offset:offset + 2]
-        print('Bytes da string na linha:', temp)
+        if verbose:
+            print("String depois divisão em bytes: %s (base 16)" % ' '.join(byte_array))
 
-        return int(temp, 16)
+        byte_array.reverse()
+        little_endian_string = ''.join(byte_array)
 
-    def fromLaneToHexString(self, lane):
-        """Converte a linha para uma string de bytes escrita em hexadecimal (base 16)"""
+        if verbose:
+            print("String depois a troca para little_endian: %s (base 16)" % little_endian_string)
+
+        return int(little_endian_string, self.encoding)
+
+    def fromLaneToHexString(self, lane, verbose=False):
+        """Convert a lane value to a string of bytes written in hexadecimal"""
+
+        if verbose:
+            print("Linha antes da conversão para hexadecimal: %d (base 10)" % lane)
 
         laneHexBE = (("%%0%dX" % (self.w // 4)) % lane)
-        # Realiza a modificação
-        temp = ''
-        nrBytes = len(laneHexBE) // 2
-        for i in range(nrBytes):
-            offset = (nrBytes - i - 1) * 2
-            temp += laneHexBE[offset:offset + 2]
-        return temp.upper()
+
+        byte_array = [laneHexBE[i:i + 2] for i in range(0, len(laneHexBE), 2)]
+
+        if verbose:
+            print("Linha depois da conversão para hexstring (little endian): %s (base 16)" % ' '.join(byte_array))
+
+        byte_array.reverse()
+
+        if verbose:
+            print("Linha depois da conversão para hexstring (big endian): %s (base 16)" % ' '.join(byte_array))
+
+        big_endian_string = ''.join(byte_array)
+
+        return big_endian_string
 
     def printState(self, state, info):
-        """Mostra na tela o estado da função esponja precedida da informação da strin
-
-        state: estado da funcao esponja
-        info: uma string de caracteres usadas como identificador"""
-
-        print("Current value of state: %s" % (info))
+        """Print on screen the state of the sponge function preceded by string info"""
+        print("Valor atual do State Array %s" % (info))
         for y in range(5):
             line = []
             for x in range(5):
-                line.append(hex(state[x][y]))
+                line.append('%016X' % (state[x][y]))
             print('\t%s' % line)
 
-    ### Funções de Conversão da String <-> Tabela (e vice-versa)
+    def convertStringToStateArray(self, string):  # Constrói o State Array (5x5) a partir de uma string
+        assert self.w % 8 == 0, "w não é múltiplo de 8"  # cada ítem (lane) tem w bits
+        assert len(string) == 2 * (self.b) // 8, "string deve ter exatament %s bits (tem %s)" % (self.b, len(string))
 
-    def convertStrToTable(self, string):
-        """Converte a string de bytes para a matrix 5x5
-
-        string: string of bytes of hex-coded bytes (e.g. '9A2C...')"""
-
-        # Checagem dos parametros
-        if self.w % 8 != 0:  # w precisa ser multiplo de 8
-            raise KeccakError("w nao eh multiplo de 8")
-        if len(string) != 2 * (self.b) // 8:  # tem que ser possivel dividir a string em 25 blocos
-            # senao nao da para montar o cubo 5x5xw como proposto pelo keccak
-            raise KeccakError.KeccakError("string nao pode ser dividida em 25 blocos de w bits cada\
-            p.e. string precisa ter exatamente b bits")
-
-        # Converte
-        output = [[0, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 0]]
-
+        output = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
         for x in range(5):
             for y in range(5):
-                offset = 2 * ((5 * y + x) * self.w) // 8
-                output[x][y] = self.fromHexStringToLane(string[offset:offset + (2 * self.w // 8)])
+                start = 2 * ((5 * y + x) * self.w) // 8
+                end = start + (2 * self.w // 8)
+                output[x][y] = self.fromHexStringToLane(string[start:end], verbose=False)
         return output
 
-    def convertTableToStr(self, table):
-        """Converte a matrix 5x5 de representacao"""
+    def convertStateArrayToString(self, table):  # Converte o state array para uma string hexadecimal
+        assert self.w % 8 == 0, "w não é múltiplo de 8"
+        assert (len(table) == 5) and (all(len(row) == 5 for row in table)), "tabela deve ser 5x5"
 
-        # Checagem do formato da entrada
-        if self.w % 8 != 0:
-            raise KeccakError.KeccakError("w nao eh multiplo de 8")
-        if (len(table) != 5) or (False in [len(row) == 5 for row in table]):
-            raise KeccakError.KeccakError("tabela precisa ser 5x5")
-
-        # Convert
-        output = [''] * 25  # sabesse de ante mao que o arranjo tera 25 strings (tabela de 5x5)
+        output = [''] * 25
         for x in range(5):
             for y in range(5):
-                output[5 * y + x] = self.fromLaneToHexString(table[x][y])
-                print('Output cada 5 * ', y, ' + ', x, ': output[', 5 * y + x, '] <-',
-                      self.fromLaneToHexString(table[x][y]))
+                output[5 * y + x] = self.fromLaneToHexString(table[x][y], verbose=False)
         output = ''.join(output).upper()
         return output
 
-    def Round(self, A, RCfixed, verbose=False):
-        """Realiza uma rodada de computação como definido pelo Keccak-f
+    def round(self, A, RCfixed, verbose=False):
+        """Perform one round of computation as defined in the Keccak-f permutation"""
 
-        A: arranjo de estado atual (matriz 5x5)
-        RCfixed: valor da rodada para ser usada no passo iota
-        """
-
-        # Inicialização das variaveis temporarias
-        B = [[0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0]]
+        # Initialisation of temporary variables
+        B = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
         C = [0, 0, 0, 0, 0]
         D = [0, 0, 0, 0, 0]
 
         # modulo theta
 
         if verbose:
-            print('Antes de theta', [bin(x) for x in C])
+            print('Antes de theta', [hex(x) for x in C])
         for x in range(5):
             # para x = 0 ate 4 faca:
             #   C[x] = a[x, 0]
@@ -244,59 +192,53 @@ class Keccak:
             # D[x] = C[x-1] ⊕ ROTACIONA(C[x+1], 1)
             D[x] = C[(x - 1) % 5] ^ self.rot(C[(x + 1) % 5], 1)
         if verbose:
-            print('Depois da rotacao de theta', 'A[', x, ']', [bin(x) for x in A[x]])
+            print('Depois da rotacao de theta', 'A[', x, ']', [hex(x) for x in A[x]])
 
         for x in range(5):
             for y in range(5):
                 #  A[x,y] = a[x,y] ⊕ D[x]
                 A[x][y] = A[x][y] ^ D[x]
         if verbose:
-            print('Depois de theta', [bin(x) for x in A[x]])
+            print('Depois de theta', [hex(x) for x in A[x]])
 
         if verbose:
-            print('Antes de rho e pi', [bin(x) for x in B[y]])
+            print('Antes de rho e pi', [hex(x) for x in B[y]])
         # modulos rho e pi respectivamente
         for x in range(5):
             for y in range(5):
-                #
-                B[y][(2 * x + 3 * y) % 5] = self.rot(A[x][y], self.r[x][y])
+                B[y][(2 * x + 3 * y) % 5] = self.rot(A[x][y], self.r[x][y], verbose)
         if verbose:
-            print('Depois de rho e pi e da rotacao em A[', x, '][', y, ']', [bin(x) for x in B[y]])
+            print('Depois de rho e pi e da rotacao em A[', x, '][', y, ']', [hex(x) for x in B[y]])
 
         if verbose:
-            print('Antes do modulo chi', [bin(x) for x in A[x]])
+            print('Antes do modulo chi', [hex(x) for x in A[x]])
         # modulo chi
         for x in range(5):
             for y in range(5):
                 A[x][y] = B[x][y] ^ ((~B[(x + 1) % 5][y]) & B[(x + 2) % 5][y])
         if verbose:
-            print('Depois do modulo chi', [bin(x) for x in A[x]])
+            print('Depois do modulo chi', [hex(x) for x in A[x]])
 
         if verbose:
-            print('Antes do modulo iota', [bin(x) for x in A[0]])
+            print('Antes do modulo iota', [hex(x) for x in A[0]])
         # modulo iota
         A[0][0] = A[0][0] ^ RCfixed  # entrada de cada uma das 24 constantes dos 24 rounds
         if verbose:
-            print('Depois do modulo iota', [bin(x) for x in A[0]])
+            print('Depois do modulo iota', [hex(x) for x in A[0]])
 
         return A
 
     def KeccakF(self, A, verbose=False):
-        """Realiza a funcao esponja Keccak-f em A
-
-        A: Matriz 5x5 contendo os bit estados
-        verbose: mostra os estados intermediarios para analise
-        """
+        """Perform Keccak-f function on the state A"""
 
         if verbose:
-            self.printState(A, "Antes da primeira rodada")
+            self.printState(A, " antes da primeira rodada")
 
         for i in range(self.nr):
-            # NB: result is truncated to lane size
-            A = self.Round(A, self.RC[i] % (1 << self.w), verbose)
+            round_constant = self.RC[i] % (1 << self.w)  # RC é truncada de acordo com o tamanho das lanes (w)
+            A = self.round(A, round_constant, verbose)
 
-            if verbose:
-                self.printState(A, "Situação depois da rodada #%d/%d" % (i + 1, self.nr))
+            if verbose: self.printState(A, " após a rodada %d/%d" % (i + 1, self.nr))
 
         return A
 
@@ -311,125 +253,223 @@ class Keccak:
         Example: pad10star1([60, 'BA594E0FB9EBBD30'],8) returns 'BA594E0FB9EBBD93'
         """
 
-        [my_string_length,
-         my_string] = M  # p.e '00112233445566778899AABBCCDDEEFF' (8 [bits cada byte] * 16 [bytes] = 128 bits)
-        # entao a entrada sera [128 [em bits], '00112233445566778899AABBCCDDEEFF']
-        # outro exemplo pode ser [16, 'bbbb'] (8 * 2 [bytes] = 16 bits)
+        [tam, text] = M
 
-        # Checagem do parametro n
-        if n % 8 != 0:  # N tem que ser multiplo de 8
-            raise KeccakError.KeccakError("n precisa ser multiplo de 8")
+        assert n % 8 == 0, 'n deve ser múltiplo de 8'
 
-        # Checa o tamanho a string de entrada
-        if len(my_string) % 2 != 0:
-            # Preenche com um '0' para alcancar o tamanho certo
-            # Tamanho da string nao pode ser impar
-            my_string = my_string + '0'  # aqui o tamanho da string eh par
-        if my_string_length > (len(my_string) // 2 * 8):
-            raise KeccakError.KeccakError("O tamanho da string nao bate com valor agregado",
-                                          my_string_length, '>', (len(my_string) // 2 * 8))
+        text += '0' * (len(text) % 2)  # Acrescenta '0' se a string não tiver tamanho par
 
-        nr_bytes_filled = my_string_length // 8  # salva quantos bytes (8 bits) tem a string
-        nbr_bits_filled = my_string_length % 8
-        l = my_string_length % n  # quantidade de blocos totais
+        assert tam <= (len(text) // 2 * 8), "the string is too short to contain the number of bits announced"
 
+        bytes_filled = tam // 8
+        bits_filled = tam % 8
+        l = tam % n
         if ((n - 8) <= l <= (n - 2)):
-            if (nbr_bits_filled == 0):
-                my_byte = 0
+            if (bits_filled == 0):
+                pad_byte = 0
             else:
-                my_byte = int(my_string[nr_bytes_filled * 2:nr_bytes_filled * 2 + 2], 16)
-            my_byte = (my_byte >> (8 - nbr_bits_filled))
-            my_byte = my_byte + 2 ** (nbr_bits_filled) + 2 ** 7
-            my_byte = "%02X" % my_byte
-            my_string = my_string[0:nr_bytes_filled * 2] + my_byte
+                pad_byte = int(text[bytes_filled * 2:bytes_filled * 2 + 2], self.encoding)
+            pad_byte = (pad_byte >> (8 - bits_filled))
+            pad_byte = pad_byte + 2 ** (bits_filled) + 2 ** 7
+            pad_byte = "%02X" % pad_byte
+            text = text[0:bytes_filled * 2] + pad_byte
         else:
-            if (nbr_bits_filled == 0):
-                my_byte = 0
+            if (bits_filled == 0):
+                pad_byte = 0
             else:
-                my_byte = int(my_string[nr_bytes_filled * 2:nr_bytes_filled * 2 + 2], 16)
-            my_byte = (my_byte >> (8 - nbr_bits_filled))
-            my_byte = my_byte + 2 ** (nbr_bits_filled)
-            my_byte = "%02X" % my_byte
-            my_string = my_string[0:nr_bytes_filled * 2] + my_byte
-            while ((8 * len(my_string) // 2) % n < (n - 8)):
-                my_string = my_string + '00'
-            my_string = my_string + '80'
+                pad_byte = int(text[bytes_filled * 2:bytes_filled * 2 + 2], self.encoding)
+            pad_byte = (pad_byte >> (8 - bits_filled))
+            pad_byte = pad_byte + 2 ** (bits_filled)
+            pad_byte = "%02X" % pad_byte
+            text = text[0:bytes_filled * 2] + pad_byte
+            while ((8 * len(text) // 2) % n < (n - 8)):
+                text = text + '00'
+            text = text + '80'
 
-        return my_string
+        return text
 
     def Keccak(self, M, r=1024, c=576, n=1024, verbose=False):
-        """Compute the Keccak[r,c,d] sponge function on message M
+        """Compute the Keccak[r,c,d] sponge function on message M"""
 
-        M: mensagem (message pair) (comprimento em bits,
-           string de caracteres hexadecimais ('0123456789ABCD...')
-        r: taxa (bitrate) em bits (defautl: 1024)
-        c: capacidade (capacity) em bits (default: 576)
-        n: comprimento da saida (output length) em bits (default: 1024),
-        verbose: print detalhes da computacao (default:False)
-        """
+        assert r and (r % 8 == 0), 'r deve ser múltiplo de 8'
+        assert n % 8 == 0, 'o tamanho de saída deve ser múltiplo de 8'
 
-        # Checagem das entradas
-        if (r < 0) or (r % 8 != 0):
-            raise KeccakError.KeccakError('r precisa ser multiplo de 8 nessa implementacao')
-        if (n % 8 != 0):
-            raise KeccakError.KeccakError('output length (vazao) precisa ser multiplo de 8')
         self.setB(r + c)
-        print('R + C:', r + c, 'bits')
-        print('Output Length (Vazao):', n)  # para o shake128 e shake256 temos que n = 0
 
         if verbose:
-            print("Criar funcao esponja Keccak com parametros r = %d c = %d w = %d" % (r, c, (r + c) // 25))
+            print("Gerando a função Keccak com (r=%d, c=%d (i.e. w=%d))" % (r, c, (r + c) // 25))
 
-        # Computa o tamanho da linha (em bits)
-        w = (r + c) // 25
+        # Inicialização do State Array
+        S = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 
-        # Inicialização do 'state array'
-        S = [[0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0]]
-
-        # Preenchendo mensagens
-        P = self.pad10star1(M, r)  # retorna mensagem com padding por blocos de r
+        # Adiciona padding
+        P = self.pad10star1(M, r)
 
         if verbose:
-            print('Mensagem com pad10*1:',
-                  "String pronta para ser absorvida: %s (vai ser completada por %d x '00')" % (P, c // 8))
+            print("String pronta para ser absorvida: %s (será completada com %d x '00')" % (
+                hexformatter(P).lower(), c // 8))
 
-        # Fase de inchando a esponja
-        # Fase do hashing em sí, essa fase é importante
-        for i in range((len(P) * 8 // 2) // r):  # precorre de bloco em bloco a string P (com pdf10*1)
-            Pi = self.convertStrToTable(P[i * (2 * r // 8):(i + 1) * (2 * r // 8)] + '00' * (
-                c // 8))  # coloca pares de zeros suficientes para encaixar cada
-            print(Pi)
+        # Absorbing phase
+        block_size = 2 * r // 8
+        block_count = (len(P) * 8 // 2) // r
+        for i in range(block_count):
+            block = P[block_size * i:block_size * (i + 1)]
+            pad = '00' * (c // 8)
+            string = block + pad
+            Pi = self.convertStringToStateArray(string)
 
-            for y in range(5):
+            for y in range(5):  # Incorpora o novo bloco ao state array, aplicando XOR nas lanes correspondentes
                 for x in range(5):
-                    S[x][y] = S[x][y] ^ Pi[x][y]  # xors dos bits nos cortes em planos (Panes(x,y)
-                    print('Inchando Esponja:', bin(S[x][y]), bin(S[x][y]), 'xor', bin(Pi[x][y]))
-            S = self.KeccakF(S, verbose)
-            print('State:', i, S)
+                    S[x][y] = S[x][y] ^ Pi[x][y]
+
+            S = self.KeccakF(S, verbose)  # Aplica a função Keccak-F
 
         if verbose:
-            print("Valor depois de absorver: %s" % (self.convertTableToStr(S)))
+            print("Valor após ter absorvido: %s" % (hexformatter(self.convertStateArrayToString(S)).lower()))
 
-        # Fase de espremendo da esponja
+        # Squeezing phase
         Z = ''
-        outputLength = n
-        while outputLength > 0:  # faz o controle para ver se os n bits do bloco foram processado
-            string = self.convertTableToStr(S)
-            Z = Z + string[:r * 2 // 8]
-            outputLength -= r
-            if outputLength > 0:
+        bits_left = n
+        while bits_left > 0:
+            string = self.convertStateArrayToString(S)
+            Z += string[:block_size]
+            bits_left -= r
+            if bits_left > 0:
                 S = self.KeccakF(S, verbose)
 
-                # NB: termina a cada bloco de tamanho r
-                # podera ser cortado se o comprimento
-                # de saida nao eh multiplo de
-                # [:2 * n // 8] corta os blocos
-
         if verbose:
-            print("Valor depois de espremer a esponja: %s" % (self.convertTableToStr(S)))
+            print("Valor após ter espremido: %s" % (hexformatter(self.convertStateArrayToString(S)).lower()))
 
         return Z[:2 * n // 8]
+
+    """
+    Para variantes propostas pelo campeonato do SHA-3, o valor do parâmetros c
+    é igual ao comprimento do resumo multiplicado por 2. Por exemplo, o candidato
+    SHA-3 com 512-bit de comprimento é o Keccak com c = 1024 e r = 576 (r + c = 1600).
+    Variantes são então, Keccak-224, Keccak-256, e Keccak-512 (O número no final é o
+    comprimento do resumo criptográfico gerado por essas funções.
+
+    O número r de mensagem em bits processadas por bloco de permutação depende da vazão
+    do comprimento do resumo criptográfico. A rate r pode ser 1152, 1088, 832, ou 576
+    que bate respectivamente com os tamanhos de resumo cript. 224, 256, 384, e 512-bit.
+
+    Todos com palavras de 64-bit.
+
+    Para assegurar que a mensagem pode ser dividida corretamente em blocos de tamanho
+    igual a r-bits, e será enxertado (padded) com valor 1 binário, zero ou mais bits
+    0 (zero) binário e ao final novamente com o valor 1 binário (por isso que o nome
+    da função se chama pad10star1.
+
+    Finalmente o estado (state) pode ser visualizado como um arranjo de 5x5 linhas (lanes)
+    onde cada linha é uma palavra de 64-bit (64-bit word). O estado inicial de 1600-bit
+    é totalmente preenchido com zeros (DRAFT FIPS 202).
+    """
+
+    @timeit
+    def SHA3_224(self, m, verbose=False):
+        tamanho_em_bits = (len(m) * 8 // 2) + 2
+        # incrementamos o valor da mensagem em 2 bits
+        m += '8'  # 8 é 0100
+        return self.Keccak((tamanho_em_bits, m), 1152, 448, 224, verbose).lower()
+
+    @timeit
+    def BLOCOS_SHA3_224(self, blocos, verbose=False):
+        for m in blocos:
+            tamanho_em_bits = (len(m) * 8 // 2) + 2
+            m += '8'
+            if verbose:
+                print('\nSHA3-224(M) = KECCAK [448] (M || 01, 224);')
+                print('\nMensagem de entrada', m)  # for sha3 domain service settings
+                print('\nTamanho da mensagem em bits', tamanho_em_bits)
+                self.Keccak((tamanho_em_bits, m), 1152, 448, 224, verbose)
+        return str(len(blocos)) + ' blocos processados com sha3 256'
+
+    @timeit
+    def SHA3_256(self, m, verbose=False):
+        tamanho_em_bits = (len(m) * 8 // 2) + 2  # incrementamos o valor da mensagem em 2 bits
+        m += '8'  # 8 é 0100
+        return self.Keccak((tamanho_em_bits, m), 1088, 512, 256, verbose).lower()
+
+    @timeit
+    def BLOCOS_SHA3_256(self, blocos, verbose=False):
+        for m in blocos:
+            tamanho_em_bits = (len(m) * 8 // 2) + 2
+            m += '8'
+            if verbose:
+                print('\nSHA3-256(M) = KECCAK [512] (M || 01, 256);')
+                print('\nMensagem de entrada', m)  # for sha3 domain service settings
+                print('\nTamanho da mensagem em bits', tamanho_em_bits)
+            self.Keccak((tamanho_em_bits, m), 1088, 512, 256, verbose)
+        return str(len(blocos)) + ' blocos processados com sha3 256'
+
+    @timeit
+    def SHA3_384(self, m, verbose=False):
+        tamanho_em_bits = (len(m) * 8 // 2) + 2  # incrementamos o valor da mensagem em 2 bits
+        m += '8'  # 8 é 0100
+        return self.Keccak((tamanho_em_bits, m), 832, 768, 384, verbose).lower()
+
+    @timeit
+    def BLOCOS_SHA3_384(self, blocos, verbose=False):
+        for m in blocos:
+            m += '8'
+            tamanho_em_bits = (len(m) * 8 // 2) + 2  # length ajusted
+            if verbose:
+                print('\nSHA3-384(M) = KECCAK [768] (M || 01, 384);')
+                print('\nMensagem de entrada', m)  # for sha3 domain service settings
+                print('\nTamanho da mensagem em bits', tamanho_em_bits)
+            self.Keccak((tamanho_em_bits, m), 832, 768, 384, verbose)
+        return str(len(blocos)) + ' blocos processados com sha3 384'
+
+    @timeit
+    def SHA3_512(self, m, verbose=False):
+        tamanho_em_bits = (len(m) * 8 // 2) + 2  # incrementamos o valor da mensagem em 2 bits
+        m += '8'  # 8 é 0100
+        return self.Keccak((tamanho_em_bits, m), 576, 1024, 512, verbose).lower()
+
+    @timeit
+    def BLOCOS_SHA3_512(self, blocos, verbose=False):
+        for m in blocos:
+            m += '8'
+            tamanho_em_bits = (len(m) * 8 // 2) + 2
+            if verbose:
+                print('\nSHA3-512(M) = KECCAK [1024] (M || 01, 512);')
+                print('\nMensagem de entrada', m)  # for sha3 domain service settings
+                print('\nTamanho da mensagem em bits', tamanho_em_bits)
+            self.Keccak((tamanho_em_bits, m), 576, 1024, 512, verbose)
+        return str(len(blocos)) + ' blocos processados com sha3 512'
+
+    @timeit
+    def SHAKE128(self, m, d=512, verbose=False):
+        tamanho_em_bits = (len(m) * 8 // 2) + 4  # incrementamos o valor da mensagem em 2 bits
+        m += 'F'  # 8 é 0100
+        return self.Keccak((tamanho_em_bits, m), 1344, 256, d, verbose).lower()
+
+    @timeit
+    def BLOCOS_SHAKE128(self, blocos, d=512, verbose=False):
+        for m in blocos:
+            tamanho_em_bits = len(m) * 8 // 2
+            m += 'F'  # cada bloco recebe + 'F'
+            if verbose:
+                print('\nSHAKE128(M, d) = KECCAK [256] (M || 1111, d);')
+                print('\nMensagem de entrada', m)  # for sha3 domain service settings
+                print('\nTamanho da mensagem em bits', tamanho_em_bits)
+            self.Keccak((tamanho_em_bits, m), 1344, 256, d, verbose)
+        return str(len(blocos)) + ' blocos processados com shake128'
+
+    @timeit
+    def SHAKE256(self, m, d=512, verbose=False):
+        tamanho_em_bits = (len(m) * 8 // 2) + 4  # incrementamos o valor da mensagem em 2 bits
+        m += 'F'  # F é 1111
+        return self.Keccak((tamanho_em_bits, m), 1088, 512, d, verbose).lower()
+
+    @timeit
+    def BLOCOS_SHAKE256(self, blocos, d=512, verbose=False):
+        for m in blocos:
+            tamanho_em_bits = (len(m) * 8 // 2) + 4
+            m += 'F'
+            if verbose:
+                print('\nSHAKE256(M, d) = KECCAK [512] (M || 1111, d);')
+                print('\nMensagem de entrada', m)  # for sha3 domain service settings
+                print('\nTamanho da mensagem em bits', tamanho_em_bits)
+            self.Keccak((tamanho_em_bits, m), 1088, 512, d, verbose)
+        return str(len(blocos)) + ' blocos processados com shake256'
