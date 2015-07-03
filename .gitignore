@@ -128,3 +128,7 @@ sympy-plots-for-*.tex/
 # PyCharm
 __pycache__
 .idea
+codeprint.md
+*.zip
+*.pdf
+saida.tex
