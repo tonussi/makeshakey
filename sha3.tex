@@ -8,7 +8,7 @@
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \title {
-  Questionário sobre SHA3 algoritmos de criptografia baseada em hash
+  {\Huge \textbf{Questionário} {\textsc{SHA-3} (Keccak)}}
 }
 
 \author {
@@ -576,9 +576,38 @@ intratáveis computacionalmente.}
     com os $r$ bits menos significativos. $r$ é o valor de rate, ou bitrate.\\
 
     A analogia com esponja é porque a função ''absorve'' um número arbitrário
-    da entrada (em bits) nos seu ''estado''.
+    da entrada (em bits) nos seu ''estado''.\\
 
+    Algoritmo 8: SPONGE[f, pad, r](M,d)\\
+    \begin{enumerate}
+      \item[] Entra com uma string Mensagem M
+      \item[] Entra com um inteiro d positivo
+      \item[] Saída com string Z de tamanho len(Z)=d
+      \item Seja $P = M \parallel pad(r,\ len(M)$ Concatena preenchimento de
+      tamanho r
+      \item Seja n = len(Texto\_Padding) / r
+      \item Capacidade = 1600 - r
+      \item \textbf{para cada} $P_{0}, \ldots, P_{n-1}$ para que seja uma
+      sequencia de strings de tamanho r tal qual
+      $P=P_{0}\parallel,\ldots,\parallel P_{n-1}$
+      \item Seja $S=0^{h}$
+      \item \textbf{para cada} $i$ \textbf{de} $0$ \textbf{até} $n-1$
+      \item[] \qquad Faça XOR entre S e ($P_i \parallel 0^c$))
+      \item[] \qquad Aplica o resultado na função \textit{Keccak-f}
+      \item Seja Z uma string vazia.
+      \item Seja $Z = Z \parallel Truncado_{r bits}(S)$
+      \item \textbf{se} $d \le |Z|$
+      \item[] \qquad \textbf{Retorne} $Truncado_{d}(Z)$
+      \item \textbf{do contrário}
+      \item[] \qquad \textbf{continua} processando concatenação de Z com S
+      truncado r bits
+      \item Seja S=Keccak-f(S), e continue com o passo \textbf{H}\\
+    \end{enumerate}
 
+    Note que a entrada d determina o número de bits que o algoritmo 8 retorna,
+    mas isso não afeta os valores. A princípio, a vazão pode ser uma string
+    infinita, e a computação \textbf{\underline{parará}} no número desejado de
+    vazão de bits.\\
   \end{enumerate}
 
 \item Explique a família de funções esponja Keccak, conforme seção 5.\\
@@ -1169,489 +1198,23 @@ imagem que tem esse detalhe a mais na tabela.} \\
 \item Gere os seus próprios exemplos (diferente do NIST) conforme Apêndice
 A.2.\\
 
+Não consegui entender essa questão.\\
+
+Algoritmo 10: h2b(H) (DRAFT FIPS 202, pg 33)
 \begin{verbatim}
-Mensagem (para testar todos os digests sha3: fifo
+def h2b(h):
+  return bin(int(h, 16))[2:].zfill(len(h) * 4)
+\end{verbatim}
 
-Comparar com www.di-mgt.com.au/sha_testvectors.html
-Gerando a função Keccak com (r=1152, c=448 (i.e. w=64))
+Algorithm 11: b2h(S) (DRAFT FIPS 202, pg 33)
+\begin{verbatim}
+def bintohex(s):
+  t = ''.join(chr(int(s[i:i+8],2)) for i in xrange(0, len(s), 8))
+  return binascii.hexlify(t)
+\end{verbatim}
 
-String pronta para ser absorvida: 6669666f06000000 0000000000000000
-0000000000000000 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 0000000000000000 0000000000000000 0000000000000080
-(será completada com 56 x '00')
+\begin{verbatim}
 
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois de theta ['0xcdeccd2cc', '0xcdeccd2cc', '0xcdeccd2cc', '0xcdeccd2cc',
-'0xcdeccd2cc']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x337b334b30000', '0x0',
-'0x0', '0x80000000000000', '0x19bd99a59c']
-Antes do modulo chi ['0xcdeccd2cc', '0xcdeccd2cc', '0xcdeccd2cc',
-'0xcdeccd2cc', '0xcdeccd2cc']
-Depois do modulo chi ['0x669547b334b30690', '0xcdeccd24c00000', '0x0',
-'0x80000000000000', '0x400019bd99a59c']
-Antes do modulo iota ['0x66f666966', '0x8000000', '0xcdfccd2ce',
-'0x66f67f2bf9a59c00', '0x662966000000066f']
-Depois do modulo iota ['0x66f666967', '0x8000000', '0xcdfccd2ce',
-'0x66f67f2bf9a59c00', '0x662966000000066f']
-Valor atual do State Array  após a rodada 1/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x669547b334b30690', '0xcdeccd24c00000',
-'0x0', '0x80000000000000', '0x400019bd99a59c']
-Depois de theta ['0xcc71ffb187e7bf58', '0xaa2954cf9794b9c8',
-'0xaae4b802b354b9c8', '0xaa64b802b354b9c8', '0xaaa4b81b0ecd1c54']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x2e06c3b347152aa9',
-'0x137d605147e1ce0c', '0xb501b7bbad595b7c', '0xebabdb1ed84a4a79',
-'0x352e243d88c57883']
-Antes do modulo chi ['0xcc71ffb187e7bf58', '0xaa2954cf9794b9c8',
-'0xaae4b802b354b9c8', '0xaa64b802b354b9c8', '0xaaa4b81b0ecd1c54']
-Depois do modulo chi ['0x270e43bbef410a08', '0x1f95781243e3cc1c',
-'0x9581b35b8ceddf2e', '0xb96b191fd14e7a7b', '0x35bd0f0ac8e57999']
-Antes do modulo iota ['0x967654a611a81c4e', '0x4313e32cdbacecc5',
-'0x431b7a108e4163ad', '0xac2e39d2466b8ccd', '0x572cd0c83fd134e5']
-Depois do modulo iota ['0x967654a611a89ccc', '0x4313e32cdbacecc5',
-'0x431b7a108e4163ad', '0xac2e39d2466b8ccd', '0x572cd0c83fd134e5']
-Valor atual do State Array  após a rodada 2/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x270e43bbef410a08', '0x1f95781243e3cc1c',
-'0x9581b35b8ceddf2e', '0xb96b191fd14e7a7b', '0x35bd0f0ac8e57999']
-Depois de theta ['0x47a49ab35041f12c', '0x7f3fa11afce33738',
-'0xf52b6a5333ed240a', '0xd9c1c0176e4e815f', '0x5517d60277e582bd']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xf5809df960af5545',
-'0x9a5b75b0df062836', '0x5620406d384cb2f2', '0xb7f1f051f4dedd82',
-'0x9fef45e904524186']
-Antes do modulo chi ['0x47a49ab35041f12c', '0x7f3fa11afce33738',
-'0xf52b6a5333ed240a', '0xd9c1c0176e4e815f', '0x5517d60277e582bd']
-Depois do modulo chi ['0xe59811f820a35c44', '0x9bd07d838f87a8e4',
-'0xd631cdc9340981a2', '0xf39890637cdc9f88', '0x91cd4eb90c5b01c4']
-Antes do modulo iota ['0xef8663c6bce2e43e', '0x7834f684271e7b28',
-'0xeec7053f3324caf', '0x32909fc94538bcd5', '0x60d5502d91c61605']
-Depois do modulo iota ['0x6f8663c6bce264b4', '0x7834f684271e7b28',
-'0xeec7053f3324caf', '0x32909fc94538bcd5', '0x60d5502d91c61605']
-Valor atual do State Array  após a rodada 3/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xe59811f820a35c44', '0x9bd07d838f87a8e4',
-'0xd631cdc9340981a2', '0xf39890637cdc9f88', '0x91cd4eb90c5b01c4']
-Depois de theta ['0xd13bf67e220f16f4', '0xaf739a058d2be254',
-'0xe2922a4f36a5cb12', '0xc73b77e57e70d538', '0xa56ea93f0ef74b74']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xaa4fc3bdd2dd295b',
-'0x9750724d194dc2e4', '0x2150bba39f8a022b', '0x50b8598a5d35665a',
-'0xee28d53d409247af']
-Antes do modulo chi ['0xd13bf67e220f16f4', '0xaf739a058d2be254',
-'0xe2922a4f36a5cb12', '0xc73b77e57e70d538', '0xa56ea93f0ef74b74']
-Depois do modulo chi ['0xfa6dc7fd1eec697f', '0x1700707b1c4db7ec',
-'0xa112d6a39f8f1a2c', '0x52b0ddc25d034612', '0xba29957d50b0c7ae']
-Antes do modulo iota ['0x8e453b34214c9713', '0x2c0dd0c8e85b8233',
-'0x74b512db3d626628', '0x81952ab7a7c9cfb1', '0xa37e353ba25834ec']
-Depois do modulo iota ['0xe453b34a14c1713', '0x2c0dd0c8e85b8233',
-'0x74b512db3d626628', '0x81952ab7a7c9cfb1', '0xa37e353ba25834ec']
-Valor atual do State Array  após a rodada 4/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xfa6dc7fd1eec697f', '0x1700707b1c4db7ec',
-'0xa112d6a39f8f1a2c', '0x52b0ddc25d034612', '0xba29957d50b0c7ae']
-Depois de theta ['0xf98f446e4563cc00', '0x14e2f3e847c21293',
-'0xa2f05530c400bf53', '0x51525e51068ce36d', '0xb9cb16ee0b3f62d1']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xc5bb82cfd8b46e72',
-'0xe18193eadc076e0', '0x1a3c735a2e65a2ba', '0x123f71d55bc546bc',
-'0x666993115ea14ce8']
-Antes do modulo chi ['0xf98f446e4563cc00', '0x14e2f3e847c21293',
-'0xa2f05530c400bf53', '0x51525e51068ce36d', '0xb9cb16ee0b3f62d1']
-Depois do modulo chi ['0xe7fbe4d118ac79fa', '0x289c5d1ea5d03ece',
-'0x1abc325fae6daa5e', '0x1f6fb1db23d74378', '0x266beb3442094d68']
-Antes do modulo iota ['0x159c88a13b676077', '0x591038d7e76707d1',
-'0xb66db8d05ff7c40b', '0xf00f1c6085c53203', '0x9671864280477e6f']
-Depois do modulo iota ['0x159c88a13b67e0fc', '0x591038d7e76707d1',
-'0xb66db8d05ff7c40b', '0xf00f1c6085c53203', '0x9671864280477e6f']
-Valor atual do State Array  após a rodada 5/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xe7fbe4d118ac79fa', '0x289c5d1ea5d03ece',
-'0x1abc325fae6daa5e', '0x1f6fb1db23d74378', '0x266beb3442094d68']
-Depois de theta ['0x5012bb6cdeab41e2', '0x9f7502a363d706d6',
-'0xad556de2686a9246', '0xa886ee66e5d07b60', '0x9182b489840e7570']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xad2261039d5c2460',
-'0xfe2c7baf63cdd367', '0xcae2f2d640218e7d', '0x1aed7bf23c1268da',
-'0x40f94c308230ed3c']
-Antes do modulo chi ['0x5012bb6cdeab41e2', '0x9f7502a363d706d6',
-'0xad556de2686a9246', '0xa886ee66e5d07b60', '0x9182b489840e7570']
-Depois do modulo chi ['0xb82f62271d3cf504', '0xf6387aef0aa56737',
-'0xcaa9c6de5089ca7d', '0x83e7fa92f17e2ade', '0xca915300a33ec14']
-Antes do modulo iota ['0x62405c592f990a0b', '0xb2ebfcb9060143a0',
-'0xc71449c36b559bfa', '0x66d57a8f2280a9fb', '0xb08f002653ecc690']
-Depois do modulo iota ['0x62405c59af990a0a', '0xb2ebfcb9060143a0',
-'0xc71449c36b559bfa', '0x66d57a8f2280a9fb', '0xb08f002653ecc690']
-Valor atual do State Array  após a rodada 6/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xb82f62271d3cf504', '0xf6387aef0aa56737',
-'0xcaa9c6de5089ca7d', '0x83e7fa92f17e2ade', '0xca915300a33ec14']
-Depois de theta ['0x261a7f8b2502e141', '0x680d6743329b7372',
-'0x549cdb7268b7de38', '0x1dd2e73ec9403e9b', '0x929c089c320df851']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x2270c837e1464a7',
-'0x8dbf488b6cb160d8', '0x743031fa7c91f58c', '0x29f592661ec1f908',
-'0x7a7f73f4f8d66d9d']
-Antes do modulo chi ['0x261a7f8b2502e141', '0x680d6743329b7372',
-'0x549cdb7268b7de38', '0x1dd2e73ec9403e9b', '0x929c089c320df851']
-Depois do modulo chi ['0x2779a8770d4c4e7', '0xd9af498a4f95e08e',
-'0x5c305b8b74a49dce', '0xa9e43223ee8ff109', '0xfd7b1eccdec2e1bd']
-Antes do modulo iota ['0xce2f613af00f5a9e', '0xab2338b65cca0081',
-'0xd4b7950e254a972c', '0x5dea45ba0fb057be', '0x28d190c711e9435f']
-Depois do modulo iota ['0x4e2f613a700fda1f', '0xab2338b65cca0081',
-'0xd4b7950e254a972c', '0x5dea45ba0fb057be', '0x28d190c711e9435f']
-Valor atual do State Array  após a rodada 7/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x2779a8770d4c4e7', '0xd9af498a4f95e08e',
-'0x5c305b8b74a49dce', '0xa9e43223ee8ff109', '0xfd7b1eccdec2e1bd']
-Depois de theta ['0xcbf2cc34c0a0e836', '0x102a1f39ffe1cc5f',
-'0x95b50d38c4d0b11f', '0x606164905efbddd8', '0x34fe487f6eb6cd6c']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x921fdbadb35b0d3f',
-'0x6c16a38e0456e519', '0x81b772dbe994ece5', '0x89bf5bc4f189c2f0',
-'0x5bb344f42889825a']
-Antes do modulo chi ['0xcbf2cc34c0a0e836', '0x102a1f39ffe1cc5f',
-'0x95b50d38c4d0b11f', '0x606164905efbddd8', '0x34fe487f6eb6cd6c']
-Depois do modulo chi ['0x3017fdacb37309b7', '0xad8bdd9a80f7e518',
-'0x9577e4be1c4ec69', '0x90e5c37ef929c378', '0xce734ce43381c253']
-Antes do modulo iota ['0x1c225898b7c3fa77', '0x3242804a495eaea6',
-'0x241bf30ff5adfa23', '0x86812741871fa277', '0x4828d0e7c4273f76']
-Depois do modulo iota ['0x9c225898b7c37a7e', '0x3242804a495eaea6',
-'0x241bf30ff5adfa23', '0x86812741871fa277', '0x4828d0e7c4273f76']
-Valor atual do State Array  após a rodada 8/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x3017fdacb37309b7', '0xad8bdd9a80f7e518',
-'0x9577e4be1c4ec69', '0x90e5c37ef929c378', '0xce734ce43381c253']
-Depois de theta ['0xeb79380580b51a73', '0x76e51833b331f6dc',
-'0xd239bbe2d202ffad', '0x4b8b06d7caefd0bc', '0x151d894d0047d197']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x62534011f465c547',
-'0x687366dce3b256bc', '0x3b9632e6e7b27a6c', '0xbac75ba7c0aac8cb',
-'0x7bd1ed349b059794']
-Antes do modulo chi ['0xeb79380580b51a73', '0x76e51833b331f6dc',
-'0xd239bbe2d202ffad', '0x4b8b06d7caefd0bc', '0x151d894d0047d197']
-Depois do modulo chi ['0x431b6071f4e5c746', '0x694b65da82b114fd',
-'0x798e6b642f9e767c', '0xaac558ab80aeeccb', '0x7e99f736d0d537b4']
-Antes do modulo iota ['0x4e358792fc7d99e4', '0xeec374798cd4bdbe',
-'0x3567862c27c3f16d', '0xcf8a0d3af79d385', '0x7ab0c175340c5784']
-Depois do modulo iota ['0x4e358792fc7d996e', '0xeec374798cd4bdbe',
-'0x3567862c27c3f16d', '0xcf8a0d3af79d385', '0x7ab0c175340c5784']
-Valor atual do State Array  após a rodada 9/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x431b6071f4e5c746', '0x694b65da82b114fd',
-'0x798e6b642f9e767c', '0xaac558ab80aeeccb', '0x7e99f736d0d537b4']
-Depois de theta ['0x801aa1f2e564109', '0x2251afb4580292b2',
-'0x3294a10af52df033', '0xe1df92c55a1d6a84', '0x35833d580a66b1fb']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xcf560299ac7ecd60',
-'0x2d053d0c0b137ebf', '0xf6a62c3e531bb876', '0x2d8ae0a80eedb50d',
-'0xcd11995a02fc787f']
-Antes do modulo chi ['0x801aa1f2e564109', '0x2251afb4580292b2',
-'0x3294a10af52df033', '0xe1df92c55a1d6a84', '0x35833d580a66b1fb']
-Depois do modulo chi ['0xea710609307e6870', '0xf6443d0400115fa7',
-'0x86e7442341138887', '0x298fad6fa84d370e', '0xad0599524f7d3e5d']
-Antes do modulo iota ['0x4a88886c41ee586d', '0x24a492b3a4b89406',
-'0x87be9462ed33c802', '0xb9faa228414e79fc', '0x1de0af85206e9884']
-Depois do modulo iota ['0x4a88886c41ee58e5', '0x24a492b3a4b89406',
-'0x87be9462ed33c802', '0xb9faa228414e79fc', '0x1de0af85206e9884']
-Valor atual do State Array  após a rodada 10/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xea710609307e6870', '0xf6443d0400115fa7',
-'0x86e7442341138887', '0x298fad6fa84d370e', '0xad0599524f7d3e5d']
-Depois de theta ['0x193ebc27fdb2d0e9', '0x50b872acddde73e',
-'0x75a8fe0d8cdf301e', '0xdac0174165818f97', '0x5e4a237c82b186c4']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x88df20ac61b11792',
-'0x868f22f1afded155', '0xa04a8becfce7d780', '0x59dac4448fdd42dd',
-'0x479de00dc7b9b105']
-Antes do modulo chi ['0x193ebc27fdb2d0e9', '0x50b872acddde73e',
-'0x75a8fe0d8cdf301e', '0xdac0174165818f97', '0x5e4a237c82b186c4']
-Depois do modulo chi ['0xd5e8d0a85d351737', '0xa4872f779d5ec1d5',
-'0x80de9ff494c0cfc0', '0x19c8ed7c0ddd40df', '0xce96c42d6bddf109']
-Antes do modulo iota ['0x880ffb43737f5a', '0xd9b5d078cd60cc3c',
-'0xd762a9e69210a5b9', '0xa2cd92c47dd9754c', '0x60d09b55519b3df2']
-Depois do modulo iota ['0x880ffbc373ff53', '0xd9b5d078cd60cc3c',
-'0xd762a9e69210a5b9', '0xa2cd92c47dd9754c', '0x60d09b55519b3df2']
-Valor atual do State Array  após a rodada 11/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xd5e8d0a85d351737', '0xa4872f779d5ec1d5',
-'0x80de9ff494c0cfc0', '0x19c8ed7c0ddd40df', '0xce96c42d6bddf109']
-Depois de theta ['0x532dcd5b8f5fc2a3', '0x224232844f341441',
-'0x61b820746aa1a54', '0x9f0df08fdfb7954b', '0x4853d9deb9b7249d']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xf677ae6dc9275214',
-'0x539ae054e34dbbd7', '0x598cf4603ad6692', '0x46e896a67ad4e3ed',
-'0x43506a2a1f2d9546']
-Antes do modulo chi ['0x532dcd5b8f5fc2a3', '0x224232844f341441',
-'0x61b820746aa1a54', '0x9f0df08fdfb7954b', '0x4853d9deb9b7249d']
-Depois do modulo chi ['0xf6758e7dd5a15eb5', '0x53dab015e75d9bd4',
-'0x1cc7d8327a04222', '0x646d96ec7ed0637d', '0xc9f06a2a9fec9747']
-Antes do modulo iota ['0xabed4fcee169e24a', '0x7e36a304e3abcd64',
-'0x8ba94d32d2d0514b', '0xd83a33951b1b352e', '0x70547baa4732f8fe']
-Depois do modulo iota ['0xabed4fce6169e240', '0x7e36a304e3abcd64',
-'0x8ba94d32d2d0514b', '0xd83a33951b1b352e', '0x70547baa4732f8fe']
-Valor atual do State Array  após a rodada 12/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xf6758e7dd5a15eb5', '0x53dab015e75d9bd4',
-'0x1cc7d8327a04222', '0x646d96ec7ed0637d', '0xc9f06a2a9fec9747']
-Depois de theta ['0x2ffe69b1322a57ca', '0x8a5157d900d692ab',
-'0xd8479a4fc02b4b5d', '0xbde67120995b6a02', '0x107b8de678679e38']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xe3799e19e78e041e',
-'0x265c96ee3ca4e114', '0xbde614dc1c0f80c6', '0x8328d6358bc97bbc',
-'0x7c16a4767aad3411']
-Antes do modulo chi ['0x2ffe69b1322a57ca', '0x8a5157d900d692ab',
-'0xd8479a4fc02b4b5d', '0xbde67120995b6a02', '0x107b8de678679e38']
-Depois do modulo chi ['0x63299e9bbf1fa65e', '0x3bcc96863c2ce015',
-'0xfdeef4dd89562086', '0x914aff352fc9778e', '0x2d16f072af3d701b']
-Antes do modulo iota ['0x3fabe56987641da5', '0xe20bbd81aa34b63c',
-'0x8b941d6460861b8d', '0xed81c4de59ff73cd', '0xace92bba2863ab70']
-Depois do modulo iota ['0x3fabe56907649d2e', '0xe20bbd81aa34b63c',
-'0x8b941d6460861b8d', '0xed81c4de59ff73cd', '0xace92bba2863ab70']
-Valor atual do State Array  após a rodada 13/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x63299e9bbf1fa65e', '0x3bcc96863c2ce015',
-'0xfdeef4dd89562086', '0x914aff352fc9778e', '0x2d16f072af3d701b']
-Depois de theta ['0x9525aaeaecd2efed', '0xcdc0a2f76fe1a9a6',
-'0xbe2c0acda9b6935', '0x6746cb447c043e3d', '0xdb1ac403fcf039a8']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xb100ff3c0e6a36c6',
-'0x32c4647351c906ce', '0x12735363bb594189', '0x7ffe5e101e07db8a',
-'0x771e51e3d4872c2']
-Antes do modulo chi ['0x9525aaeaecd2efed', '0xcdc0a2f76fe1a9a6',
-'0xbe2c0acda9b6935', '0x6746cb447c043e3d', '0xdb1ac403fcf039a8']
-Depois do modulo chi ['0xb5c89fbc0e4a1697', '0x1fd0d07953a99ece',
-'0x8067d2661b510081', '0x576776909e03d9aa', '0x2171c61e6a58c7c0']
-Antes do modulo iota ['0x83061836f6ded8a8', '0x82eb4bf1d81d66ea',
-'0x6de366f04b653e97', '0x4466d33b6be9b85d', '0x513b48ffa8ec02dd']
-Depois do modulo iota ['0x3061836f6ded823', '0x82eb4bf1d81d66ea',
-'0x6de366f04b653e97', '0x4466d33b6be9b85d', '0x513b48ffa8ec02dd']
-Valor atual do State Array  após a rodada 14/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xb5c89fbc0e4a1697', '0x1fd0d07953a99ece',
-'0x8067d2661b510081', '0x576776909e03d9aa', '0x2171c61e6a58c7c0']
-Depois de theta ['0x4047a0f94fac3036', '0xea5fef3c124fb86f',
-'0x75e8ed235ab72620', '0xa2e849d5dfe5ff0b', '0xd4fef95b2bbee161']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xbe56caefb858753f',
-'0xaa7f90daff3d2845', '0x5719a61bd67c8d06', '0x3308cdb1d6b0988f',
-'0x7f232edb72e22213']
-Antes do modulo chi ['0x4047a0f94fac3036', '0xea5fef3c124fb86f',
-'0x75e8ed235ab72620', '0xa2e849d5dfe5ff0b', '0xd4fef95b2bbee161']
-Depois do modulo chi ['0x3a54eacf3813b525', '0x7bbf9410fdf32801',
-'0xd713683bc64c8866', '0x2608d7bfdfa9d80f', '0xff21069b74e272d5']
-Antes do modulo iota ['0x31fdcf9f77343f25', '0x2a112231f531edba',
-'0x7aa1310dea8eea9c', '0x8afb608100a43e0d', '0x21fcd735a9190c09']
-Depois do modulo iota ['0xb1fdcf9f7734bfac', '0x2a112231f531edba',
-'0x7aa1310dea8eea9c', '0x8afb608100a43e0d', '0x21fcd735a9190c09']
-Valor atual do State Array  após a rodada 15/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x3a54eacf3813b525', '0x7bbf9410fdf32801',
-'0xd713683bc64c8866', '0x2608d7bfdfa9d80f', '0xff21069b74e272d5']
-Depois de theta ['0x8f662112c135ab2', '0x491d1ccee9f3c796',
-'0xe5b1e0e5d24c67f1', '0x14aa5f61cba93798', '0xcd838e4560e29d42']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xe3915838a750b360',
-'0x8adf6f43a3f59e96', '0xf96828e75e24799a', '0xd794bcc426b4e909',
-'0x530fd2279d84ac97']
-Antes do modulo chi ['0x8f662112c135ab2', '0x491d1ccee9f3c796',
-'0xe5b1e0e5d24c67f1', '0x14aa5f61cba93798', '0xcd838e4560e29d42']
-Depois do modulo chi ['0x9291003a853bb320', '0x659674ba3d11f17',
-'0xc96800c51e643c12', '0xb787dde46e04edec', '0x4acf8017fd90a4b3']
-Antes do modulo iota ['0x63c227c0904343a', '0x437897347b49185a',
-'0x4ccd861996abaa45', '0x87800a8b940cf910', '0x6423a80b98e2f652']
-Depois do modulo iota ['0x863c227c0904b439', '0x437897347b49185a',
-'0x4ccd861996abaa45', '0x87800a8b940cf910', '0x6423a80b98e2f652']
-Valor atual do State Array  após a rodada 16/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x9291003a853bb320', '0x659674ba3d11f17',
-'0xc96800c51e643c12', '0xb787dde46e04edec', '0x4acf8017fd90a4b3']
-Depois de theta ['0x530d6da720831565', '0xc7c50ad60669b952',
-'0x8f46d58bbdc9a57', '0x761bb079cbbc4ba9', '0x8b53ed8a582802f6']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xfb62960a00bda2d4',
-'0x2b82bf2d869771c7', '0xa6081b1516730eac', '0x16671b48f479003c',
-'0x2189bd4b01d4af70']
-Antes do modulo chi ['0x530d6da720831565', '0xc7c50ad60669b952',
-'0x8f46d58bbdc9a57', '0x761bb079cbbc4ba9', '0x8b53ed8a582802f6']
-Depois do modulo chi ['0x7f609e02002dd2dc', '0xa3a29f2f16976987',
-'0xe400395a047286ac', '0x508dba0cb17800ae', '0xf8d6fdf1516bf72']
-Antes do modulo iota ['0x71b41763182107d6', '0x7748cedd477ee59c',
-'0x39f14090edd215b3', '0x10155c0a0ad4fb6d', '0xd0fb2c43a939e294']
-Depois do modulo iota ['0xf1b41763182187d4', '0x7748cedd477ee59c',
-'0x39f14090edd215b3', '0x10155c0a0ad4fb6d', '0xd0fb2c43a939e294']
-Valor atual do State Array  após a rodada 17/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x7f609e02002dd2dc', '0xa3a29f2f16976987',
-'0xe400395a047286ac', '0x508dba0cb17800ae', '0xf8d6fdf1516bf72']
-Depois de theta ['0xeecfa8bcd4179b59', '0x320da991c2ad2002',
-'0x75af0fe4d048cf29', '0xc1228cb26542492b', '0x9e225961c12cf6f7']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x9658704b3dbde788',
-'0xaf4b6d926ea8981e', '0x70736c42e4ad929b', '0x34fd868fdfffc459',
-'0xe099e97a7bb9bdcc']
-Antes do modulo chi ['0xeecfa8bcd4179b59', '0x320da991c2ad2002',
-'0x75af0fe4d048cf29', '0xc1228cb26542492b', '0x9e225961c12cf6f7']
-Depois do modulo chi ['0x165a68cbbc4ac788', '0x3f4f6f426e89981c',
-'0xfdf26c6234ed07ba', '0x25a6c4abeffe447b', '0xe05deefb29a1acfc']
-Antes do modulo iota ['0x3968e76f740898cb', '0x2f9b3c063a422bf8',
-'0x627e2e5e27ab4ad2', '0x6e24a81983d27a15', '0xff1a38182581e685']
-Depois do modulo iota ['0xb968e76f7408984b', '0x2f9b3c063a422bf8',
-'0x627e2e5e27ab4ad2', '0x6e24a81983d27a15', '0xff1a38182581e685']
-Valor atual do State Array  após a rodada 18/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x165a68cbbc4ac788', '0x3f4f6f426e89981c',
-'0xfdf26c6234ed07ba', '0x25a6c4abeffe447b', '0xe05deefb29a1acfc']
-Depois de theta ['0x819d7a0553e9d191', '0xa8887d8c812a8e05',
-'0x6a357eacdb4e11a3', '0xb261d665005d5262', '0x779afc35c602bae5']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xbf0d7180aeb95de6',
-'0x1761d76ee92181a7', '0x5344baebd5e28d8f', '0xfbb8912a683bbcd9',
-'0x7bc5ad6da7c5f18c']
-Antes do modulo chi ['0x819d7a0553e9d191', '0xa8887d8c812a8e05',
-'0x6a357eacdb4e11a3', '0xb261d665005d5262', '0x779afc35c602bae5']
-Depois do modulo chi ['0xa5a5f1992efd5def', '0x7a9c5e6496389a2',
-'0x96a5bea3ddc284bb', '0xeeb811795a1ab8fa', '0x3ef2cd69a7c5308c']
-Antes do modulo iota ['0x24031aa67db3adb2', '0xed34e8215e9dc28a',
-'0x321a3005f447d6cb', '0x62fb7c244cdc2adc', '0xba480b7ac37c0c77']
-Depois do modulo iota ['0x24031aa67db32db8', '0xed34e8215e9dc28a',
-'0x321a3005f447d6cb', '0x62fb7c244cdc2adc', '0xba480b7ac37c0c77']
-Valor atual do State Array  após a rodada 19/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xa5a5f1992efd5def', '0x7a9c5e6496389a2',
-'0x96a5bea3ddc284bb', '0xeeb811795a1ab8fa', '0x3ef2cd69a7c5308c']
-Depois de theta ['0xe18b6f217b1def1', '0xac14828d702f0abc',
-'0x3d18f9c8e48e07a5', '0x4505561263563be4', '0x954f8a029e89b392']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0xe280a7a26ce4a553',
-'0xf3182b4905a5be4d', '0x8c4308a32c0304c2', '0xe4b3e8d27fcc5453',
-'0x5f66ba84e5d78167']
-Antes do modulo chi ['0xe18b6f217b1def1', '0xac14828d702f0abc',
-'0x3d18f9c8e48e07a5', '0x4505561263563be4', '0x954f8a029e89b392']
-Depois do modulo chi ['0xc200ef91efe4b053', '0xf3cc2909266f3f05',
-'0xa8ce08e73d0050e3', '0x88b3b9da1b485453', '0xfe4ebac4f5978077']
-Antes do modulo iota ['0x1b1db7cc5cd7eabb', '0xba2ba1b0c8247e00',
-'0x8b729f99ac7c239c', '0x93970ef7184846b5', '0x5c164fafe89ff6ed']
-Depois do modulo iota ['0x9b1db7ccdcd7eab1', '0xba2ba1b0c8247e00',
-'0x8b729f99ac7c239c', '0x93970ef7184846b5', '0x5c164fafe89ff6ed']
-Valor atual do State Array  após a rodada 20/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xc200ef91efe4b053', '0xf3cc2909266f3f05',
-'0xa8ce08e73d0050e3', '0x88b3b9da1b485453', '0xfe4ebac4f5978077']
-Depois de theta ['0x282a82e4b1740616', '0x19e6447c78ff8940',
-'0x42e465926390e6a6', '0x6299d4af45d8e216', '0x1464d7b1ab073632']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x35ec6ac1cd8c8519',
-'0xaac721b9d6a41182', '0x7561e17f371a2d4a', '0x41e7658567bab7f1',
-'0x4a5d6c4f42fd0a0f']
-Antes do modulo chi ['0x282a82e4b1740616', '0x19e6447c78ff8940',
-'0x42e465926390e6a6', '0x6299d4af45d8e216', '0x1464d7b1ab073632']
-Depois do modulo chi ['0xa468f0417e24af1d', '0xea862e8146a493e6',
-'0x754559b3339a074b', '0xcba33703210c9791', '0x425dec6576f50209']
-Antes do modulo iota ['0x86b207f0c579558', '0x2796b0c06e133d09',
-'0x139b43113157d03e', '0x48b8030b949dc1d', '0xf20f5b95c2d7e738']
-Depois do modulo iota ['0x886b207f8c5715d9', '0x2796b0c06e133d09',
-'0x139b43113157d03e', '0x48b8030b949dc1d', '0xf20f5b95c2d7e738']
-Valor atual do State Array  após a rodada 21/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0xa468f0417e24af1d', '0xea862e8146a493e6',
-'0x754559b3339a074b', '0xcba33703210c9791', '0x425dec6576f50209']
-Depois de theta ['0x350d55d109a3223c', '0x7be38b1131231ec7',
-'0xe420fc23441d8a6a', '0x5ac69293568b1ab0', '0xd33849f501728f28']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x127d405ca3ca34ce',
-'0x1699a47c4f44cb2e', '0xc25a539d5d48fea2', '0x9a374a7b2a61dfa8',
-'0x5864483f906f2d00']
-Antes do modulo chi ['0x350d55d109a3223c', '0x7be38b1131231ec7',
-'0xe420fc23441d8a6a', '0x5ac69293568b1ab0', '0xd33849f501728f28']
-Depois do modulo chi ['0x887e64dd86527cc2', '0x168bb64c0b65eb2e',
-'0x429c42c11d58d3fb', '0x98078c5528744bb9', '0x7a046aba9cea2c92']
-Antes do modulo iota ['0x65c4db1e5a65b673', '0xbf656d4bba5edf78',
-'0x6318cca2a6e392a6', '0xa84a1951b1882a22', '0x59045c3a62727e65']
-Depois do modulo iota ['0xe5c4db1e5a6536f3', '0xbf656d4bba5edf78',
-'0x6318cca2a6e392a6', '0xa84a1951b1882a22', '0x59045c3a62727e65']
-Valor atual do State Array  após a rodada 22/24
-
-Antes de theta ['0x0', '0x0', '0x0', '0x0', '0x0']
-Depois da rotacao de theta A[ 4 ] ['0x887e64dd86527cc2', '0x168bb64c0b65eb2e',
-'0x429c42c11d58d3fb', '0x98078c5528744bb9', '0x7a046aba9cea2c92']
-Depois de theta ['0x8022b2c1e2e05ca1', '0x1ed760506fd7cb4d',
-'0x4ac094dd79eaf398', '0x905b5a494cc66bda', '0x7258bca6f8580cf1']
-Antes de rho e pi ['0x0', '0x0', '0x0', '0x0', '0x0']
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x2f29be16033c5c96',
-'0xbe7225671b122cff', '0xcb7bb3596cf3ad12', '0x414efeb2390be22b',
-'0x5a3f2248aa60716']
-Antes do modulo chi ['0x8022b2c1e2e05ca1', '0x1ed760506fd7cb4d',
-'0x4ac094dd79eaf398', '0x905b5a494cc66bda', '0x7258bca6f8580cf1']
-Depois do modulo chi ['0xa768f4162114b0d3', '0xbe72295b9f13ecff',
-'0xca29335964fafd12', '0x1e65ea2eb53c84a', '0x136ed22c1a848506']
-Antes do modulo iota ['0x379c25badc13139a', '0xb55ff1c239da3dff',
-'0x62253c1f7676ac5c', '0x1f470ae22087d59e', '0x80305d3561d858ee']
-Depois do modulo iota ['0x379c25ba5c13139b', '0xb55ff1c239da3dff',
-'0x62253c1f7676ac5c', '0x1f470ae22087d59e', '0x80305d3561d858ee']
-Valor atual do State Array  após a rodada 23/24
-
-Depois de rho e pi e da rotacao em A[ 4 ][ 4 ] ['0x4f856be129a79e1a',
-'0x5e97f2703a9dc20d', '0x360dd2eadc48675f', '0xd9ee69b0dfebe541',
-'0x2da6e48c94a04ce3']
-Antes do modulo chi ['0xcc6f182f9414934b', '0xd575c5622a13cf67',
-'0xa12edf60d1fade8a', '0x6ae1b29b5e53ebd2', '0x78693e15af84a69e']
-Depois do modulo chi ['0xe8161b00b239c0a', '0x5eb7d37ca8b8c51d',
-'0x1e1dc2e7fe50741f', '0x5ae369905e6fe243', '0xd56e4ae3e840ae7']
-Antes do modulo iota ['0xbecbe58edc73fcc7', '0xd7ca84b26d5ad8ce',
-'0xd7a7e5f0cce6ac05', '0x48c0611b7a1a185d', '0xde09ed9d15532991']
-Depois do modulo iota ['0x3ecbe58e5c737ccf', '0xd7ca84b26d5ad8ce',
-'0xd7a7e5f0cce6ac05', '0x48c0611b7a1a185d', '0xde09ed9d15532991']
-Valor atual do State Array  após a rodada 24/24
 \end{verbatim}
 
 \end{enumerate}
@@ -1684,27 +1247,12 @@ partes cruciais para o calculo do hash são \ref{codeprint}:\\
 \item Execute a implementação passo a passo, mostrando o maior número possível
 de saídas.\\
 
-Primeiro eu testei para ver se o código esta funcionando corretamente, Rodando
-python3 keccak/test.py irá processar os arquivos abaixo listados Esse teste esta
-disponível no site di-mgt.com.au/sha\_testvectors.html \cite{testskat}. Todos os
-testes com os arquivos abaixo foram processados e passaram OK nos testes.\\
-
-  \begin{enumerate}
-    \item ShortMsgKAT.txt
-    \item ShortMsgKAT\_0.txt
-    \item ShortMsgKAT\_224.txt
-    \item ShortMsgKAT\_256.txt
-    \item ShortMsgKAT\_384.txt
-    \item ShortMsgKAT\_512.txt
-  \end{enumerate}
-
-Agora a questão pede "execute a implementação passo a passo, mostrando o maior
-número possível de saídas". {\bfseries Então as saídas estão em anexo ao final
-do} \verb|pdf| \ref{saidasprograma}. Eu rodei o código para \textbf{M} =
-{\color{Red} \verb|'abc'|} a fim de certificar que estava rodando corretamente.
-Os resultados bateram. Basta ir até o diretório do código keccak dentro do zip e
-rodar python3 demo.py. Ele lhe perguntará o que você deseja fazer 's' para
-verificar os tempos de processamento de 65 KB de dados (gerados internamente).
+{\bfseries As saídas estão em anexo ao final do} \verb|pdf|
+\ref{saidasprograma}. Eu rodei o código para \textbf{M} = {\color{Red}
+\verb|'abc'|} a fim de certificar que estava rodando corretamente. Os resultados
+bateram. Basta ir até o diretório do código keccak dentro do zip e rodar python3
+demo.py. Ele lhe perguntará o que você deseja fazer 's' para verificar os tempos
+de processamento de 65 KB de dados (gerados internamente).
 
   \begin{verbatim}
     Retirado do site: http://www.di-mgt.com.au/sha_testvectors.html
@@ -1855,6 +1403,14 @@ calculado.\\
     à software (com optimizações para software). Porém o SHA-3 é mais adaptado a
     hardware, ou seja, o foco do SHA-3 é para ser implementado em hardware
     (p.e.: Sistemas Embarcados).\\
+
+    Pela modelagem, a vazão de um XOF não afeta os bits que ele produz, isto é,
+    não precisa ter valor para vazão. Teoricamente a vazão pode ser uma string
+    infinita, e a aplicação / protocolo / sistema que utilizar a função
+    simplesmente computa o valor desejado para tamanho inicial em bits da
+    string. Em termos de retro-compatibilidade em padrões criptográficos mais
+    antigos, essas funções XOFS irão se comportar como uma função hash quando
+    foram processados entradas em fluxo (DRAFT FIPS 202, pg 31).
 
     \item Quanto tempo você acha (e por que) o SHA3 será considerado seguro?\\
 
