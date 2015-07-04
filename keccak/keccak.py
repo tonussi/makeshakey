@@ -382,7 +382,7 @@ class Keccak:  # Classe que implementa a função esponja
                 print('\nMensagem de entrada', m)  # for sha3 domain service settings
                 print('\nTamanho da mensagem em bits', tamanho_em_bits)
                 self.Keccak((tamanho_em_bits, m), 1152, 448, 224, verbose)
-        return str(len(blocos)) + ' blocos processados com sha3 256'
+        return str(len(blocos)) + ' blocos processados com sha3 224'
 
     @timeit
     def SHA3_256(self, m, verbose=False):
